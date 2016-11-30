@@ -56,7 +56,6 @@ or for GitHub:
 Host github.com
     IdentityFile ~/.ssh/github_rsa
 ```
-* In the same directory you will find a .pub file. That's your public key. Copy its content to your repository deployment keys. In both BitBucket and GitHub click on Settings, then on Deploy Keys (or Deployment Keys), and then Add New. You will be prompted to add a name, and then paste the content of the .pub file.
 * You must connect to the repository for the first time to verify the SSH keys. In the following commands replace BRANCH with the name of the branch, and REPOSITORY with the SSH address of your repository in Github or BitBucket (e.g. git@bitbucket.org:username/reponame.git). When prompted answer yes:
 ```
 % mkdir ~/git
@@ -78,9 +77,16 @@ If you are using a public repository you can start here.
 
 ## Repository Setup
 
-All that is needed in your repository (BitBucket or GitHub) is to configure the Webhooks:
+If you are using a private repository you need to copy the public key to your repository:
 
-* Go to Settings > Webhooks > Add Webhook
+* In the directory `~/.ssh` you will find a `.pub` file. That's your public key. 
+* Copy its contents
+* In both BitBucket and GitHub go to Settings > Deploy Keys (or Deployment Keys) > Add New
+* Enter a name for the key and paste the content of the `.pub` file.
+
+For both private and public repositories you need to configure the Webhooks:
+
+* In both BitBucket and GitHub go to Settings > Webhooks > Add Webhook
 * On URL (or Payload URL) enter the URL of the deploy script with your secret access token, for example: https://domain.com/deploy.php?t=ACCESS_TOKEN
 * Choose the specific events that would trigger this webhook. For BitBucket: Push, Pull Request - Merged. For GitHub: Push, Pull Request 
 
