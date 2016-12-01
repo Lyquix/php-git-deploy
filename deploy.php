@@ -1,13 +1,15 @@
 <?php
 /*
- * Automatically deploy the code using PHP and Git.
+ * php-git-deploy
+ * PHP script for automatic code deployment directly from Github or Bitbucket to your server using webhooks
+ * Documentation: https://github.com/Lyquix/php-git-deploy
  */
-$err = array();
 if (file_exists('deploy-config.php')) {
 	require_once 'deploy-config.php';
 } else {
-	$err[] = 'File deploy-config.php does not exist';
+	die('File deploy-config.php does not exist');
 }
+$err = array();
 if (!defined('ACCESS_TOKEN')) $err[] = 'Access token is not configured';
 if (!defined('REMOTE_REPOSITORY')) $err[] = 'Remote repository is not configured';
 if (!defined('BRANCH')) $err[] = 'Branch is not configured';
