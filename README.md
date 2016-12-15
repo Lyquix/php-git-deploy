@@ -64,6 +64,8 @@ Host github.com
 % rm -rf ~/git
 ```
 
+NOTE: you can ignore the permission denied error message you will see at this point
+
 If you are using a public repository you can start here.
 
 * Download `deploy.php` and `deploy-config.orig.php` to your webserver, accessible via a public URL
