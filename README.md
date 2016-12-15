@@ -90,7 +90,7 @@ For both private and public repositories you need to configure the Webhooks:
 
 * In both BitBucket and GitHub go to Settings > Webhooks > Add Webhook
 * On URL (or Payload URL) enter the URL of the deploy script with your secret access token, for example: https://domain.com/deploy.php?t=ACCESS_TOKEN
-* Choose the specific events that would trigger this webhook. For BitBucket: Push, Pull Request - Merged. For GitHub: Push, Pull Request 
+* Choose the specific events that would trigger this webhook. For BitBucket: Push. For GitHub: Push, Pull Request 
 
 ## Deploy Different Branches to Different Environments
 
