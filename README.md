@@ -37,6 +37,8 @@ If you are using a private repository start here. If you are using a public repo
 ```
 % mkdir ~/.ssh
 ```
+NOTE: if you get an error, it could be that the home directory is not owned by the www-data user.
+
 * Change directory: 
 ```
 % cd ~/.ssh
@@ -46,12 +48,12 @@ If you are using a private repository start here. If you are using a public repo
 % ssh-keygen -t rsa
 ```
 * Repeat the previous step for BitBucket, using file name `bitbucket_rsa`.
-* Create a new file `config` that will tie specific servers with keys, add the following configuration for BitBucket:
+* Create a new file `config` that will tie specific servers with keys. If you are using BitBucket, add the following:
 ```
 Host bitbucket.org
     IdentityFile ~/.ssh/bitbucket_rsa
 ```
-or for GitHub:
+or if you are using GitHub:
 ```
 Host github.com
     IdentityFile ~/.ssh/github_rsa
@@ -86,11 +88,18 @@ If you are using a private repository you need to copy the public key to your re
 * In both BitBucket and GitHub go to Settings > Deploy Keys (or Deployment Keys) > Add New
 * Enter a name for the key and paste the content of the `.pub` file.
 
-For both private and public repositories you need to configure the Webhooks:
+For both private and public repositories you need to configure the Webhooks. You will need as many Webhooks as environments you want to deploy to (development, production, etc.):
 
 * In both BitBucket and GitHub go to Settings > Webhooks > Add Webhook
+* Use a descriptive name, for example: _Deploy development_ or _Deploy master_
 * On URL (or Payload URL) enter the URL of the deploy script with your secret access token, for example: https://domain.com/deploy.php?t=ACCESS_TOKEN
-* Choose the specific events that would trigger this webhook. For BitBucket: Push. For GitHub: Push, Pull Request 
+* If your development environment is protected with HTTP password, just add the username and password to the webhook URL as follows:
+```
+https://username:password@domain.com/deploy.php?t=ACCESS_TOKEN
+```
+* Choose the specific events that would trigger this webhook:
+  * BitBucket: Push
+  * GitHub: Push, Pull Request
 
 ## Deploy Different Branches to Different Environments
 
@@ -124,10 +133,6 @@ https://domain.com/deploy.php?t=ACCESS_TOKEN&b=BRANCH&c=COMMIT
 ## Security Considerations
 
 * Treat the ACCESS_TOKEN the same way you would treat a password: choose a long and hard-to-guess string, and keep it secret.
-* If your development environment is protected with HTTP password, just add the username and password to the webhook URL as follows:
-```
-https://username:password@domain.com/deploy.php?t=ACCESS_TOKEN
-```
 * Ideally, the deploy script is accessible through an SSL connection (HTTPS), to minimize the risk of the ACCESS_TOKEN being intercepted.
 * The script doesn't include any sanitation rules for the parameters that are read from the request because all of them pass through validation from configuration settings. If the values cannot be validated the script stops. Let me know if there is anything else that can be done to make this script more secure. 
 
