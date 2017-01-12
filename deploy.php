@@ -161,7 +161,7 @@ function cmd($command, $print = true) {
 	// Error handling and cleanup
 	if($print && $return_code !== 0) {
 		header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
-		printf('<span class="error">Error encountered!Stopping the script to prevent possible data loss.
+		printf('<span class="error">Error encountered! Stopping the script to prevent possible data loss.
 CHECK THE DATA IN YOUR TARGET DIR!</span>
 '
 		);
@@ -224,7 +224,7 @@ if(in_array($_GET['c'], $commits)) {
 	$checkout = $_GET['c'];
 } else {
 	$checkout = reset($commits);
-	echo "\nWARNING: passed commit hash doesn't match existing commits, assuming most recent commit $checkout\n";
+	echo "\nPassed commit hash is blank or doesn't match existing commits. Assuming most recent commit in branch: $checkout\n";
 }
 // Checkout specific commit
 echo "\nReset branch to commit $checkout in git directory\n";
