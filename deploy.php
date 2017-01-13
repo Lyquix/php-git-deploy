@@ -26,6 +26,8 @@ if (file_exists(dirname(__FILE__) . '/deploy-config.php')) {
 	removeLockFile();
 	die('File deploy-config.php does not exist');
 }
+
+// Check configuration errors
 $err = array();
 if (!defined('ACCESS_TOKEN')) $err[] = 'Access token is not configured';
 if (!defined('REMOTE_REPOSITORY')) $err[] = 'Remote repository is not configured';
@@ -38,6 +40,7 @@ if (!defined('TIME_LIMIT')) define('TIME_LIMIT', 60);
 if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || ACCESS_TOKEN === '') {
 	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
 }
+
 // Prevent caching
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
@@ -74,6 +77,7 @@ if (count($err) || ACCESS_TOKEN === '' || REMOTE_REPOSITORY === '' || BRANCH ===
 <?php
 // The branch
 $branch = '';
+
 // Process request headers
 $headers = getallheaders();
 if(isset($headers['X-Event-Key'])) {
@@ -111,7 +115,8 @@ if(isset($headers['X-Event-Key'])) {
 		removeLockFile();
 		exit;
 	}
-} 
+}
+
 // Branch from webhook?
 if($branch) {
 	// Only main branch is allowed for webhook deployments
@@ -197,10 +202,14 @@ CHECK THE DATA IN YOUR TARGET DIR!</span>
 
 // The commits
 $commits = array();
+
 // The checkout commit
 $checkout = '';
+
 // The current files version
 $version = '';
+
+// Check if there is a git directory
 if (!is_dir(GIT_DIR)) {
 	// Clone the repository into the GIT_DIR
 	echo "\nGit directory not found, cloning repository\n";
@@ -237,12 +246,14 @@ if (!is_dir(GIT_DIR)) {
 		, $branch
 	));
 }
+
 // Get list of all commits
 $commits = cmd(sprintf(
 	'git --no-pager --git-dir="%s.git" log --pretty=format:"%%h" origin/%s'
 	, GIT_DIR
 	, $branch)
 , false);
+
 // Set checkout commit
 if(in_array($_GET['c'], $commits)) {
 	$checkout = $_GET['c'];
@@ -250,6 +261,7 @@ if(in_array($_GET['c'], $commits)) {
 	$checkout = reset($commits);
 	echo "\nPassed commit hash is blank or doesn't match existing commits. Assuming most recent commit in branch: $checkout\n";
 }
+
 // Checkout specific commit
 echo "\nReset branch to commit $checkout in git directory\n";
 cmd(sprintf(
@@ -258,9 +270,11 @@ cmd(sprintf(
 	, GIT_DIR
 	, $checkout
 ));	
+
 // Update the submodules
 echo "\nUpdating git submodules in git directory\n";
 cmd('git submodule update --init --recursive');
+
 // Get current version or assume oldest commit
 if(file_exists(TARGET_DIR . 'VERSION')) {
 	$version = trim(file_get_contents(TARGET_DIR . 'VERSION'));
@@ -273,6 +287,7 @@ else {
 	$version = end($commits);
 	echo "No version file found, assuming current version is oldest commit\n";
 }
+
 // Get list of added, modified and deleted files
 echo "\nGet list of files added, modified and deleted from $version to $checkout\n";
 $files = cmd(sprintf(
@@ -281,6 +296,7 @@ $files = cmd(sprintf(
 	, $version
 	, $checkout
 ));
+
 // Count files that were added or modified. Add removed files to array.
 $added = $modified = 0;
 $deleted = array();
@@ -307,6 +323,7 @@ printf(
 	, count($deleted)
 );
 echo "\nNOTE: repository files that have been modfied or removed in target directory will be resynced with repository even if not listed in commits\n";
+
 // rsync all added and modified files (no deletes, exclude .git directory)
 cmd(sprintf(
 	'rsync -rltgoDzvO %s %s --exclude=.git'
@@ -314,8 +331,10 @@ cmd(sprintf(
 	, TARGET_DIR
 ));
 echo "\nDeleting files removed from repository\n";
+
 // Delete files removed in commits
 foreach($deleted as $file) unlink($file);
+
 // Update version file to current commit
 echo "\nUpdate target directory version file to commit $checkout\n";
 cmd(sprintf(
