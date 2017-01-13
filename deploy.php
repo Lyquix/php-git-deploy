@@ -4,10 +4,26 @@
  * PHP script for automatic code deployment directly from Github or Bitbucket to your server using webhooks
  * Documentation: https://github.com/Lyquix/php-git-deploy
  */
+
+// Check if lock file exists
+if (file_exists(dirname(__FILE__) . '/deploy.lock')) {
+	die('File deploy.lock detected, another process already running');
+}
+
+// Create lock file
+$fh = fopen(dirname(__FILE__) . '/deploy.lock', 'w');
+fclose($fh);
+
+// Remove lock file
+function removeLockFile() {
+	unlink(dirname(__FILE__) . '/deploy.lock');
+}
+
 // Check if there is a configuration file
 if (file_exists(dirname(__FILE__) . '/deploy-config.php')) {
 	require_once dirname(__FILE__) . '/deploy-config.php';
 } else {
+	removeLockFile();
 	die('File deploy-config.php does not exist');
 }
 $err = array();
@@ -45,10 +61,12 @@ h2, .error { color: #c33; }
 <?php
 if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN) {
 	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
+	removeLockFile();
 	die('<h2>Access Denied</h2>');
 }
 if (count($err) || ACCESS_TOKEN === '' || REMOTE_REPOSITORY === '' || BRANCH === '' || GIT_DIR === '' || TARGET_DIR === '') {
 	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
+	removeLockFile();
 	die("<h2>Configuration Error</h2>\n<pre>\n" . implode("\n", $err) . "\n</pre>");
 }
 ?>
@@ -72,6 +90,7 @@ if(isset($headers['X-Event-Key'])) {
 		$branch = $payload->pullrequest->destination->branch->name;
 	} else {
 		echo "\nOnly push and merged pull request events are processed\n\nDone.\n</pre></body></html>";
+		removeLockFile();
 		exit;
 	}
 } else if(isset($headers['X-GitHub-Event'])) {
@@ -89,6 +108,7 @@ if(isset($headers['X-Event-Key'])) {
 		$branch = $payload->pull_request->head->ref;
 	} else {
 		echo "\nOnly push and merged pull request events are processed\n\nDone.\n</pre></body></html>";
+		removeLockFile();
 		exit;
 	}
 } 
@@ -97,6 +117,7 @@ if($branch) {
 	// Only main branch is allowed for webhook deployments
 	if($branch != unserialize(BRANCH)[0]) {
 		echo "\nBranch $branch not allowed, stopping execution.\n</pre></body></html>";
+		removeLockFile();
 		exit;
 	}
 
@@ -107,6 +128,7 @@ if($branch) {
 		// Check if branch is allowed
 		if(!in_array($branch, unserialize(BRANCH))) {
 			echo "\nBranch $branch not allowed, stopping execution.\n</pre></body></html>";
+			removeLockFile();
 			exit;
 		}
 	} else {
@@ -124,6 +146,7 @@ foreach ($requiredBinaries as $command) {
 	$path = trim(shell_exec('which '.$command));
 	if ($path == '') {
 		header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
+		removeLockFile();
 		die(sprintf('<div class="error"><b>%s</b> not available. It needs to be installed on the server for this script to work.</div>', $command));
 	} else {
 		$version = explode("\n", shell_exec($command.' --version'));
@@ -301,6 +324,8 @@ cmd(sprintf(
 	, TARGET_DIR . 'VERSION'
 ));
 
+// Remove lock file
+removeLockFile();
 ?>
 
 Done.
