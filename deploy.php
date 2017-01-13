@@ -215,7 +215,7 @@ if (!is_dir(GIT_DIR)) {
 }
 // Get list of all commits
 $commits = cmd(sprintf(
-	'git --no-pager --git-dir="%s.git" log --pretty=format:"%%h" %s'
+	'git --no-pager --git-dir="%s.git" log --pretty=format:"%%h" origin/%s'
 	, GIT_DIR
 	, $branch)
 , false);
