@@ -4,8 +4,9 @@
  * PHP script for automatic code deployment directly from Github or Bitbucket to your server using webhooks
  * Documentation: https://github.com/Lyquix/php-git-deploy
  */
-if (file_exists('deploy-config.php')) {
-	require_once 'deploy-config.php';
+// Check if there is a configuration file
+if (file_exists(dirname(__FILE__) . '/deploy-config.php')) {
+	require_once dirname(__FILE__) . '/deploy-config.php';
 } else {
 	die('File deploy-config.php does not exist');
 }
