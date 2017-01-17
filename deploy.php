@@ -6,22 +6,22 @@
  */
 
 // Check if lock file exists
-if (file_exists(dirname(__FILE__) . '/deploy.lock')) {
+if (file_exists(__DIR__ . '/deploy.lock')) {
 	die('File deploy.lock detected, another process already running');
 }
 
 // Create lock file
-$fh = fopen(dirname(__FILE__) . '/deploy.lock', 'w');
+$fh = fopen(__DIR__ . '/deploy.lock', 'w');
 fclose($fh);
 
 // Remove lock file
 function removeLockFile() {
-	unlink(dirname(__FILE__) . '/deploy.lock');
+	unlink(__DIR__ . '/deploy.lock');
 }
 
 // Check if there is a configuration file
-if (file_exists(dirname(__FILE__) . '/deploy-config.php')) {
-	require_once dirname(__FILE__) . '/deploy-config.php';
+if (file_exists(__DIR__ . '/deploy-config.php')) {
+	require_once __DIR__ . '/deploy-config.php';
 } else {
 	removeLockFile();
 	die('File deploy-config.php does not exist');
