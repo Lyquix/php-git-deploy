@@ -1,19 +1,23 @@
 # php-git-deploy
-_PHP script for automatic code deployment directly from Github or BitBucket to your server using webhooks_
+_PHP script that automatically deploys code from git repositories (Github, BitBucket, or other) to a target directory_
 
 ## Overview
 
-Github and BitBucket offer webhook functionality to automate the deployment of your code to your servers.
+This script allows you to deploy code from your git repository to your server without any additional services. We developed this script to deploy code for websites. Make sure you understand how this script works to determine if it is appropriate for your environment.
 
-This PHP script allows you to connect your repository with your server without any additional services. It creates a local repository in your server, from which it copies files to your production directory (e.g. document root in the case of a web server). 
+Both GitHub and BitBucket offer _Webhooks_ that can be used to automatically execute this script when a commit is pushed to the the repository, and automate the deployment of your code to from the repository to your server.
 
-In normal use, every time there is an update in the repository Github/BitBucket trigger this script by simply opening its URL. The script automatically ignores webhook triggers for events other than push and pull request merged, or for branches different than the one for which it is configured. The script fetches the repo from origin and checks out the most recent commit. Using rsync it adds and updates any files that have been changed in the repository directory since the last update, into the production directory, resets any files in the production directory that differ from the repo. Using the commit details it identifies files that have been removed from the repository, and deletes them from the production directory.
+The script creates a local repository in your server (git directory) it a directory different from the server production files (target directory, e.g. the document root in the case of a web server). There are two reasons for separating the local git directory from the target directory: in most cases, production directories contain files that are not part of the repository, and in the case of websites placing the local git repo in a production directory would expose the `.git` directory to the public.  
 
-This script does not remove files that exist in your production directory and that don't exist in the repo (e.g. media files, configuration files).
+In normal use, each time there is a commit pushed to the repository or a pull request merged, GitHub/BitBucket triggers this script. The script checks the headers and payload sent by the Webhook and ignores events other than push and pull request merge, as well as any events on branches other than one for which the script is configured.
 
-The script keeps a version file in the production directory that saves the hash value of the latest commit that has been deployed.
+The script fetches the repository, and then checks out the most recent commit in the configured branch. Following, it uses `rsync` to add and modify any files in the target directory that differ from the git directory. The script uses the information from the commit to identify any files that have been removed from the repository, and deletes them from the target directory.
 
-A manual trigger mode is available that allows you to re-sync files, checkout a different commit, or a different branch.
+Any other files that exist in the target directory but are not tracked in the repo are not affected. This normally include media files, configuration files, etc.
+
+At the end each execution, the script writes a version file in the target directory that contains the hash value of the latest commit that has been deployed. This is used in subsequent executions of the script to determine what is the last commit that was deployed and what files need to be deleted. If no version file is found the script assumes that there have been no previous deployments.
+
+You can also trigger the script manually. If no GET parameters are passed URL (other than the access token), the script deploys the most recent commit for the default branch configured for the script. However, it is possible to specify a different branch as long as it is included in the configuration in the list of allowed branches, as well as a different commit. This functionality can be used when you need to set your target directory to a specific branch/commit.
 
 ## Requirements
 
@@ -43,11 +47,11 @@ NOTE: if you get an error, it could be that the home directory is not owned by t
 ```
 % cd ~/.ssh
 ```
-* Create keys for Github. When prompted use file name `github_rsa`. Leave passphrase blank: 
+* Create deployment keys for GitHub/Bitbucket: 
 ```
 % ssh-keygen -t rsa
 ```
-* Repeat the previous step for BitBucket, using file name `bitbucket_rsa`.
+* When prompted use file name `github_rsa` or `bitbucket_rsa` depending on what service you use. When prompted for a passphrase, leave it blank.
 * Create a new file `config` that will tie specific servers with keys. If you are using BitBucket, add the following:
 ```
 Host bitbucket.org
@@ -138,21 +142,16 @@ https://domain.com/deploy.php?t=ACCESS_TOKEN&b=BRANCH&c=COMMIT
 
 ## Acknowledgements & References
 
-simple-php-git-deploy (Marko Marković)
-https://github.com/markomarkovic/simple-php-git-deploy
+[simple-php-git-deploy (Marko Marković)](https://github.com/markomarkovic/simple-php-git-deploy)
 
-Automated git deployments from Bitbucket (Jonathan Nicol)
-http://jonathannicol.com/blog/2013/11/19/automated-git-deployments-from-bitbucket/
+[Automated git deployments from Bitbucket (Jonathan Nicol)](http://jonathannicol.com/blog/2013/11/19/automated-git-deployments-from-bitbucket/)
 
-Automatic deployment for bitbucket.org web-based projects (Igor Ll)
-https://bitbucket.org/lilliputten/automatic-bitbucket-deploy
+[Automatic deployment for bitbucket.org web-based projects (Igor Ll)](https://bitbucket.org/lilliputten/automatic-bitbucket-deploy)
 
-How do I check for valid Git branch names?
-http://stackoverflow.com/a/12093994
+[How do I check for valid Git branch names?](http://stackoverflow.com/a/12093994)
 
-BitBucket Webhook Event Payloads
-https://confluence.atlassian.com/bitbucket/event-payloads-740262817.html
+[BitBucket Webhook Event Payloads](https://confluence.atlassian.com/bitbucket/event-payloads-740262817.html)
 
-GitHub Webhook Event Payloads
-https://developer.github.com/webhooks/
-https://developer.github.com/v3/activity/events/types/
+[GitHub Webhook Event Review](https://developer.github.com/webhooks/)
+
+[GitHub Webhook Event Payloads](https://developer.github.com/v3/activity/events/types/)
