@@ -7,15 +7,15 @@ This script allows you to deploy code from your git repository to your server wi
 
 Both GitHub and BitBucket offer _Webhooks_ that can be used to automatically execute this script when a commit is pushed to the the repository, and automate the deployment of your code to from the repository to your server.
 
-The script creates a local repository in your server (git directory) it a directory different from the server production files (target directory, e.g. the document root in the case of a web server). There are two reasons for separating the local git directory from the target directory: in most cases, production directories contain files that are not part of the repository, and in the case of websites placing the local git repo in a production directory would expose the `.git` directory to the public.  
+The script creates a local repository in your server (git directory), a directory different from the server production files (target directory, e.g. the document root in the case of a web server). There are two reasons for separating the local git directory from the target directory: First, in most cases, production directories contain files that are not part of the repository and perfoming git operations directly on production files may cause problems. Second, in the case of websites making the local git repo also your production directory would expose the `.git` directory to the public.
 
 In normal use, each time there is a commit pushed to the repository or a pull request merged, GitHub/BitBucket triggers this script. The script checks the headers and payload sent by the Webhook and ignores events other than push and pull request merge, as well as any events on branches other than one for which the script is configured.
 
-The script fetches the repository, and then checks out the most recent commit in the configured branch. Following, it uses `rsync` to add and modify any files in the target directory that differ from the git directory. The script uses the information from the commit to identify any files that have been removed from the repository, and deletes them from the target directory.
+The script fetches the repository and then checks out the most recent commit in the configured branch. Following, it uses `rsync` to add and modify any files in the target directory that differ from the git directory. The script uses the information from the commit to identify any files that have been removed from the repository, and deletes them from the target directory.
 
 Any other files that exist in the target directory but are not tracked in the repo are not affected. This normally include media files, configuration files, etc.
 
-At the end each execution, the script writes a version file in the target directory that contains the hash value of the latest commit that has been deployed. This is used in subsequent executions of the script to determine what is the last commit that was deployed and what files need to be deleted. If no version file is found the script assumes that there have been no previous deployments.
+At the end of each execution, the script writes a `VERSION` file in the target directory that contains the hash value of the latest commit that has been deployed. This is used in subsequent executions of the script to determine what is the last commit that was deployed and what files need to be deleted. If no version file is found the script assumes that there have been no previous deployments.
 
 You can also trigger the script manually. If no GET parameters are passed URL (other than the access token), the script deploys the most recent commit for the default branch configured for the script. However, it is possible to specify a different branch as long as it is included in the configuration in the list of allowed branches, as well as a different commit. This functionality can be used when you need to set your target directory to a specific branch/commit.
 
@@ -31,6 +31,8 @@ You can also trigger the script manually. If no GET parameters are passed URL (o
 
 ## Server Setup
 
+These instructions were created for Ubuntu 14.04 but you should be able to adjust them to other Linux flavors.
+
 If you are using a private repository start here. If you are using a public repository you can jump ahead to the point indicated below.
 
 * Log in as the PHP user (e.g. www-data): 
@@ -41,7 +43,7 @@ If you are using a private repository start here. If you are using a public repo
 ```
 % mkdir ~/.ssh
 ```
-NOTE: if you get an error, it could be that the home directory is not owned by the www-data user.
+NOTE: if you get an error, it could be that the home directory is not owned by the www-data user. Check that the home directory for www-data is owned by www-data, and if not, correct its ownership. 
 
 * Change directory: 
 ```
@@ -74,11 +76,11 @@ NOTE: you can ignore the permission denied error message you will see at this po
 
 If you are using a public repository you can start here.
 
-* Download `deploy.php` and `deploy-config.orig.php` to your webserver, accessible via a public URL
-* Rename `deploy-config.orig.php` to `deploy-config.php` and edit its configuration:
-  * __REMOTE_REPOSITORY__: for public repositories you can use the HTTPS address (e.g. https://github.com/username/reponame.git), and for private repositories you will need to use the SSH address (e.g. git@bitbucket.org:username/reponame.git)
-  * __BRANCH__: this is the array of branches allowed to deploy with this script. The first branch is the only one that will be allowed for webhook triggers from Github/BitBucket. The others will be allowed on manual triggers.
-  * __ACCESS_TOKEN__: a secret string that must be configured to ensure some reasonable level of security and prevent abuse. More on security below.
+* Download `deploy.php` script and `deploy-config.orig.php` sample configuration file to your webserver, and place them in a directory accessible via a public URL
+* Rename `deploy-config.orig.php` to `deploy-config.php` and edit its configuration, as follows:
+  * __REMOTE_REPOSITORY__: for public repositories you can use the HTTPS address (e.g. https://github.com/username/reponame.git), and for private repositories you will need to use the SSH address (e.g. git@bitbucket.org:username/reponame.git). You can get these addresses by browsing the repository page on GitHub or BitBucket.
+  * __BRANCH__: this is the array of branches allowed to deploy with this script. The first branch is considered the default branch and the only one that will be allowed for webhook triggers from Github/BitBucket, or when no branch is specified in the GET parameters. The other branches are allowed only on manual triggers.
+  * __ACCESS_TOKEN__: a secret string that must be configured to provide protection against abuse. More on security below.
   * __GIT_DIR__: the full path of the directory where the Git repository will be cloned. This should be different than the production directory, and should not be accessible publicly. Include the trailing slash.
   * __TARGET_DIR__: the full path of the directory of your production files. Include the trailing slash.
   * __TIME_LIMIT__: maximum time allowed for each command, in seconds. 60 should be fine unless your deployments are massive. Adjust if necessary.
@@ -107,7 +109,7 @@ https://username:password@domain.com/deploy.php?t=ACCESS_TOKEN
 
 ## Deploy Different Branches to Different Environments
 
-If you have multiple branches that you need to deploy to different environments, just copy the script and its configuration, and add its own webhook. For example, you can have a deploy script in your development server and in your production server, with different configurations and their own webhooks. This will allow you to deploy different branches to different environments.
+If you have multiple branches that you need to deploy to different environments, just copy the script and configuration files, and add its own webhook. For example, you can have a deploy script in your development server and in your production server, with different configurations and their own webhooks. This will allow you to deploy different branches to different environments.
 
 ## Manual Triggering
 
@@ -136,9 +138,14 @@ https://domain.com/deploy.php?t=ACCESS_TOKEN&b=BRANCH&c=COMMIT
 
 ## Security Considerations
 
-* Treat the ACCESS_TOKEN the same way you would treat a password: choose a long and hard-to-guess string, and keep it secret.
-* Ideally, the deploy script is accessible through an SSL connection (HTTPS), to minimize the risk of the ACCESS_TOKEN being intercepted.
-* The script doesn't include any sanitation rules for the parameters that are read from the request because all of them pass through validation from configuration settings. If the values cannot be validated the script stops. Let me know if there is anything else that can be done to make this script more secure. 
+You must keep in mind that this script can be dangerous if misused or abused. We recommend the following security considerations, specially for your production environment:
+
+* Treat the access token the same way you would treat a password: choose a long and hard-to-guess string, and keep it secret.
+* Make sure the deploy script is accessible through an SSL-protected connection (HTTPS), this will protect the the access token being intercepted.
+* For your production environment, configure only one branch (e.g. master). Even if a 3rd party can get ahold of your access token, they will not be able to change branches, and it is unlikely they can guess a specific commit hash.
+* The script doesn't include any sanitation for the parameters that are read from the request. This is because the access token and branch names must match the values in the configuration file, and the commit hash must match a commit from the repo in the specified branch. If the values cannot be validated the script stops.
+* The script creates a lock file that is used to ensure that only one instance of the script is running at a given time. This prevents multiple git, rsync, and delete operations from being executed in parallel, and helps protect againts a DoD-type of abuse. 
+* The script usage of the latest version deployed to determine what files to delete, and the use of rsync, help protect against performance and load issues that could be caused by rapid firing of the script.
 
 ## Acknowledgements & References
 
