@@ -194,7 +194,7 @@ function cmd($command, $print = true) {
 CHECK THE DATA IN YOUR TARGET DIR!</span>
 '
 		);
-		break;
+		exit;
 	}
 
 	return $tmp;
