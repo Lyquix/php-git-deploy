@@ -231,17 +231,17 @@ if (!is_dir(GIT_DIR)) {
 } else {
 	// GIT_DIR exists and hopefully already contains the correct remote origin
 	// so we'll fetch the changes
-	// Checkout branch
-	echo "\nCheckout branch $branch\n";
+	echo "\nFetching repository from origin\n";
 	cmd(sprintf(
-		'git --git-dir="%s.git" --work-tree="%s" checkout %s'
+		'git --git-dir="%s.git" --work-tree="%s" fetch --tags origin %s'
 		, GIT_DIR
 		, GIT_DIR
 		, $branch
 	));
-	echo "\nFetching repository from origin\n";
+	// Checkout branch
+	echo "\nCheckout branch $branch\n";
 	cmd(sprintf(
-		'git --git-dir="%s.git" --work-tree="%s" fetch --tags origin %s'
+		'git --git-dir="%s.git" --work-tree="%s" checkout %s'
 		, GIT_DIR
 		, GIT_DIR
 		, $branch
