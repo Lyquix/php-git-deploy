@@ -45,6 +45,20 @@ if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || ACCESS_TOKEN === '') {
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
+if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN) {
+	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
+	removeLockFile();
+	echo '<h2>Access Denied</h2>';
+	echo '<!--' . str_repeat(" ", 512) . ' -->'; // prevent "friendly" browser error page
+	die();
+}
+if (count($err) || ACCESS_TOKEN === '' || REMOTE_REPOSITORY === '' || BRANCH === '' || GIT_DIR === '' || TARGET_DIR === '') {
+	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
+	removeLockFile();
+	echo "<h2>Configuration Error</h2>\n<pre>\n" . implode("\n", $err) . "\n</pre>";
+	echo '<!--' . str_repeat(" ", 512) . ' -->'; // prevent "friendly" browser error page
+	die();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -61,18 +75,6 @@ h2, .error { color: #c33; }
 	</style>
 </head>
 <body>
-<?php
-if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN) {
-	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
-	removeLockFile();
-	die('<h2>Access Denied</h2>');
-}
-if (count($err) || ACCESS_TOKEN === '' || REMOTE_REPOSITORY === '' || BRANCH === '' || GIT_DIR === '' || TARGET_DIR === '') {
-	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
-	removeLockFile();
-	die("<h2>Configuration Error</h2>\n<pre>\n" . implode("\n", $err) . "\n</pre>");
-}
-?>
 <pre>
 <?php
 // The branch
