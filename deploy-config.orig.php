@@ -6,6 +6,14 @@
  */
 
 /*
+ * ENABLED
+ * Set to false to prevent the execution of this script
+ * Useful to control activation of this script only when needed
+ *
+ */
+define('ENABLED', true);
+
+/*
  * REMOTE_REPOSITORY:
  * Address of the remote Git repo. For private repos use the SSH address 
  * Examples: 

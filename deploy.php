@@ -29,6 +29,7 @@ if (file_exists(__DIR__ . '/deploy-config.php')) {
 
 // Check configuration errors
 $err = array();
+if (!defined('ENABLED')) $err[] = 'Enabled flag is not configured';
 if (!defined('ACCESS_TOKEN')) $err[] = 'Access token is not configured';
 if (!defined('REMOTE_REPOSITORY')) $err[] = 'Remote repository is not configured';
 if (!defined('BRANCH')) $err[] = 'Branch is not configured';
@@ -37,7 +38,7 @@ if (!defined('TARGET_DIR')) $err[] = 'Target directory is not configured';
 if (!defined('TIME_LIMIT')) define('TIME_LIMIT', 60);
 
 // If there's authorization error, set the correct HTTP header.
-if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || ACCESS_TOKEN === '') {
+if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || ACCESS_TOKEN === '' || ENABLED !== true) {
 	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
 }
 
@@ -45,7 +46,7 @@ if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || ACCESS_TOKEN === '') {
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
-if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN) {
+if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || ENABLED !== true) {
 	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
 	removeLockFile();
 	echo "<html>\n<body>\n<h2>Access Denied</h2>\n</body>\n</html>\n";
