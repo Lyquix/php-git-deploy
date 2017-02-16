@@ -48,15 +48,15 @@ header("Pragma: no-cache");
 if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN) {
 	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
 	removeLockFile();
-	echo '<h2>Access Denied</h2>';
-	echo '<!--' . str_repeat(" ", 512) . ' -->'; // prevent "friendly" browser error page
+	echo "<html>\n<body>\n<h2>Access Denied</h2>\n</body>\n</html>\n";
+	echo "<!--\n~~~~~~~~~~~~~ Prevent browser friendly error page ~~~~~~~~~~~~~~\n" . str_repeat(str_repeat("~", 64) . "\n", 8) . "-->\n";
 	die();
 }
 if (count($err) || ACCESS_TOKEN === '' || REMOTE_REPOSITORY === '' || BRANCH === '' || GIT_DIR === '' || TARGET_DIR === '') {
 	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
 	removeLockFile();
-	echo "<h2>Configuration Error</h2>\n<pre>\n" . implode("\n", $err) . "\n</pre>";
-	echo '<!--' . str_repeat(" ", 512) . ' -->'; // prevent "friendly" browser error page
+	echo "<html>\n<body>\n<h2>Configuration Error</h2>\n<pre>\n" . implode("\n", $err) . "\n</pre>\n</body>\n</html>\n";
+	echo "<!--\n~~~~~~~~~~~~~ Prevent browser friendly error page ~~~~~~~~~~~~~~\n" . str_repeat(str_repeat("~", 64) . "\n", 8) . "-->\n";
 	die();
 }
 ?>
