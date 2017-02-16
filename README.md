@@ -78,6 +78,7 @@ If you are using a public repository you can start here.
 
 * Download `deploy.php` script and `deploy-config.orig.php` sample configuration file to your webserver, and place them in a directory accessible via a public URL
 * Rename `deploy-config.orig.php` to `deploy-config.php` and edit its configuration, as follows:
+  * __ENABLED__: change to `false` to disable the script and prevent its execution. This feature provides an extra level of security.
   * __REMOTE_REPOSITORY__: for public repositories you can use the HTTPS address (e.g. https://github.com/username/reponame.git), and for private repositories you will need to use the SSH address (e.g. git@bitbucket.org:username/reponame.git). You can get these addresses by browsing the repository page on GitHub or BitBucket.
   * __BRANCH__: this is the array of branches allowed to deploy with this script. The first branch is considered the default branch and the only one that will be allowed for webhook triggers from Github/BitBucket, or when no branch is specified in the GET parameters. The other branches are allowed only on manual triggers.
   * __ACCESS_TOKEN__: a secret string that must be configured to provide protection against abuse. More on security below.
