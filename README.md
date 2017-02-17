@@ -142,8 +142,9 @@ https://domain.com/deploy.php?t=ACCESS_TOKEN&b=BRANCH&c=COMMIT
 You must keep in mind that this script can be dangerous if misused or abused. We recommend the following security considerations, specially for your production environment:
 
 * Treat the access token the same way you would treat a password: choose a long and hard-to-guess string, and keep it secret.
-* Make sure the deploy script is accessible through an SSL-protected connection (HTTPS), this will protect the the access token being intercepted.
+* Make sure the deploy script is accessible through an SSL-protected connection (HTTPS), this will protect the the access token from being intercepted.
 * For your production environment, configure only one branch (e.g. master). Even if a 3rd party can get ahold of your access token, they will not be able to change branches, and it is unlikely they can guess a specific commit hash.
+* Change the ENABLED parameter to `false` to turn off the script for added security if you only deploy code ocassionally.
 * The script doesn't include any sanitation for the parameters that are read from the request. This is because the access token and branch names must match the values in the configuration file, and the commit hash must match a commit from the repo in the specified branch. If the values cannot be validated the script stops.
 * The script creates a lock file that is used to ensure that only one instance of the script is running at a given time. This prevents multiple git, rsync, and delete operations from being executed in parallel, and helps protect againts a DoD-type of abuse. 
 * The script usage of the latest version deployed to determine what files to delete, and the use of rsync, help protect against performance and load issues that could be caused by rapid firing of the script.
