@@ -78,12 +78,14 @@ If you are using a public repository you can start here.
 
 * Download `deploy.php` script and `deploy-config.orig.php` sample configuration file to your webserver, and place them in a directory accessible via a public URL
 * Rename `deploy-config.orig.php` to `deploy-config.php` and edit its configuration, as follows:
-  * __ENABLED__: change to `false` to disable the script and prevent its execution. This feature provides an extra level of security.
+  * __DISABLED__: (optional) change to `true` to disable the script and prevent its execution. This feature provides an extra level of security.
   * __REMOTE_REPOSITORY__: for public repositories you can use the HTTPS address (e.g. https://github.com/username/reponame.git), and for private repositories you will need to use the SSH address (e.g. git@bitbucket.org:username/reponame.git). You can get these addresses by browsing the repository page on GitHub or BitBucket.
   * __BRANCH__: this is the array of branches allowed to deploy with this script. The first branch is considered the default branch and the only one that will be allowed for webhook triggers from Github/BitBucket, or when no branch is specified in the GET parameters. The other branches are allowed only on manual triggers.
   * __ACCESS_TOKEN__: a secret string that must be configured to provide protection against abuse. More on security below.
   * __GIT_DIR__: the full path of the directory where the Git repository will be cloned. This should be different than the production directory, and should not be accessible publicly. Include the trailing slash.
   * __TARGET_DIR__: the full path of the directory of your production files. Include the trailing slash.
+  * __LOG_FILE__: (optional) the full path of file to log all script output
+  * __EMAIL_NOTIFICATIONS__: (optional) email address to which a copy of the script output will be sent
   * __TIME_LIMIT__: maximum time allowed for each command, in seconds. 60 should be fine unless your deployments are massive. Adjust if necessary.
 
 ## Repository Setup
@@ -144,7 +146,7 @@ You must keep in mind that this script can be dangerous if misused or abused. We
 * Treat the access token the same way you would treat a password: choose a long and hard-to-guess string, and keep it secret.
 * Make sure the deploy script is accessible through an SSL-protected connection (HTTPS), this will protect the the access token from being intercepted.
 * For your production environment, configure only one branch (e.g. master). Even if a 3rd party can get ahold of your access token, they will not be able to change branches, and it is unlikely they can guess a specific commit hash.
-* Change the ENABLED parameter to `false` to turn off the script for added security if you only deploy code ocassionally.
+* Change the DISABLED parameter to `true` to turn off the script for added security if you only deploy code ocassionally.
 * The script doesn't include any sanitation for the parameters that are read from the request. This is because the access token and branch names must match the values in the configuration file, and the commit hash must match a commit from the repo in the specified branch. If the values cannot be validated the script stops.
 * The script creates a lock file that is used to ensure that only one instance of the script is running at a given time. This prevents multiple git, rsync, and delete operations from being executed in parallel, and helps protect againts a DoD-type of abuse. 
 * The script usage of the latest version deployed to determine what files to delete, and the use of rsync, help protect against performance and load issues that could be caused by rapid firing of the script.
