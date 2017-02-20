@@ -15,7 +15,10 @@ header("Pragma: no-cache");
 
 // Check if lock file exists
 if (file_exists(__DIR__ . '/deploy.lock')) {
-	die('File deploy.lock detected, another process already running');
+	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
+	echo "<html>\n<body>\n<h2>File deploy.lock detected, another process already running</h2>\n</body>\n</html>\n";
+	echo "<!--\n~~~~~~~~~~~~~ Prevent browser friendly error page ~~~~~~~~~~~~~~\n" . str_repeat(str_repeat("~", 64) . "\n", 8) . "-->\n";
+	die();
 }
 
 // Create lock file
@@ -32,8 +35,11 @@ function endScript() {
 if (file_exists(__DIR__ . '/deploy-config.php')) {
 	require_once __DIR__ . '/deploy-config.php';
 } else {
-	die('File deploy-config.php does not exist');
+	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
+	echo "<html>\n<body>\n<h2>File deploy-config.php does not exist</h2>\n</body>\n</html>\n";
+	echo "<!--\n~~~~~~~~~~~~~ Prevent browser friendly error page ~~~~~~~~~~~~~~\n" . str_repeat(str_repeat("~", 64) . "\n", 8) . "-->\n";
 	endScript();
+	die();
 }
 
 // Check configuration errors
