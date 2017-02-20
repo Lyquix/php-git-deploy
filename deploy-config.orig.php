@@ -44,5 +44,11 @@ define('GIT_DIR', '/srv/www/domain.com/git/');
 /* TARGET_DIR: Directory where the production files are located */
 define('TARGET_DIR', '/srv/www/domain.com/public_html/');
 
+/* LOG_FILE: Full path of log file. Leave blank to disable logging */
+define('LOG_FILE', '/srv/www/domain.com/logs/deploy.log');
+
+/* EMAIL_NOTIFICATIONS: Email address where notifications are sent. Leave blank to disable email notifications */
+define('EMAIL_NOTIFICATIONS', '');
+
 /* TIME_LIMIT: Time limit for each command */
 define('TIME_LIMIT', 60);

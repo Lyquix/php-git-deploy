@@ -13,6 +13,16 @@ header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 
+// Start output buffering
+ob_start('obHandler');
+$output = '';
+// Output buffering handler
+function obHandler($buffer) {
+	global $output;
+	$output .= $buffer;
+	return $buffer;
+}
+
 // Check if lock file exists
 if (file_exists(__DIR__ . '/deploy.lock')) {
 	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
@@ -29,6 +39,25 @@ fclose($fh);
 function endScript() {
 	// Remove lock file
 	unlink(__DIR__ . '/deploy.lock');
+	// Flush buffer and prepare output for log and email
+	ob_end_flush();
+	global $output;
+	// Remove <head>, <script>, and <style> tags, including content
+	$output = preg_replace('/<head[\s\w\W\n]+<\/head>/m', '', $output);
+	$output = preg_replace('/<script[\s\w\W\n]+<\/script>/m', '', $output);
+	$output = preg_replace('/<style[\s\w\W\n]+<\/style>/m', '', $output);
+	// Add heading and strip tags
+	$output = 	str_repeat("~", 80) . "\n" . 
+				'[' . date('c') . '] - ' . $_SERVER['REMOTE_ADDR'] . " - b=" . $_GET['b'] . ' c=' . $_GET['c'] . "\n" . 
+				strip_tags($output);
+	// Decode HTML entities
+	$output = html_entity_decode($output);
+	// Collapse multiple blank lines into one
+	$output = preg_replace('/^\n+/m', "\n", $output);
+	// Save to log file
+	if(defined('LOG_FILE') && LOG_FILE !== '') error_log($output, 3, LOG_FILE);
+	// Send email notification
+	if(defined('EMAIL_NOTIFICATIONS') && EMAIL_NOTIFICATIONS !== '') error_log($output, 1, EMAIL_NOTIFICATIONS);
 }
 
 // Check if there is a configuration file
