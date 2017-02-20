@@ -69,16 +69,16 @@ if (count($err) || ACCESS_TOKEN === '' || REMOTE_REPOSITORY === '' || BRANCH ===
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<meta name="robots" content="noindex">
-	<title>PHP Git deploy script</title>
-	<style>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>PHP Git deploy script</title>
+<style>
 body { padding: 0 1em; background: #222; color: #fff; }
 h2, .error { color: #c33; }
 .prompt { color: #6be234; }
 .command { color: #729fcf; }
 .output { color: #999; }
-	</style>
+</style>
 </head>
 <body>
 <pre>
