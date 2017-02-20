@@ -38,27 +38,23 @@ if (file_exists(__DIR__ . '/deploy-config.php')) {
 
 // Check configuration errors
 $err = array();
-if (!defined('ENABLED')) $err[] = 'Enabled flag is not configured';
-if (!defined('ACCESS_TOKEN')) $err[] = 'Access token is not configured';
-if (!defined('REMOTE_REPOSITORY')) $err[] = 'Remote repository is not configured';
-if (!defined('BRANCH')) $err[] = 'Branch is not configured';
-if (!defined('GIT_DIR')) $err[] = 'Git directory is not configured';
-if (!defined('TARGET_DIR')) $err[] = 'Target directory is not configured';
+if (!defined('ACCESS_TOKEN') || ACCESS_TOKEN === '') $err[] = 'Access token is not configured';
+if (!defined('REMOTE_REPOSITORY') || REMOTE_REPOSITORY === '') $err[] = 'Remote repository is not configured';
+if (!defined('BRANCH') || BRANCH === '') $err[] = 'Branch is not configured';
+if (!defined('GIT_DIR') || GIT_DIR === '') $err[] = 'Git directory is not configured';
+if (!defined('TARGET_DIR') || TARGET_DIR === '') $err[] = 'Target directory is not configured';
 if (!defined('TIME_LIMIT')) define('TIME_LIMIT', 60);
 
-// If there's authorization error, set the correct HTTP header.
-if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || ACCESS_TOKEN === '' || ENABLED !== true) {
-	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
-}
-
-if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || ENABLED !== true) {
+// If there's authorization error
+if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || DISABLED === true) {
 	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
 	echo "<html>\n<body>\n<h2>Access Denied</h2>\n</body>\n</html>\n";
 	echo "<!--\n~~~~~~~~~~~~~ Prevent browser friendly error page ~~~~~~~~~~~~~~\n" . str_repeat(str_repeat("~", 64) . "\n", 8) . "-->\n";
 	endScript();
 	die();
 }
-if (count($err) || ACCESS_TOKEN === '' || REMOTE_REPOSITORY === '' || BRANCH === '' || GIT_DIR === '' || TARGET_DIR === '') {
+// If there is a configuration error
+if (count($err)) {
 	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
 	echo "<html>\n<body>\n<h2>Configuration Error</h2>\n<pre>\n" . implode("\n", $err) . "\n</pre>\n</body>\n</html>\n";
 	echo "<!--\n~~~~~~~~~~~~~ Prevent browser friendly error page ~~~~~~~~~~~~~~\n" . str_repeat(str_repeat("~", 64) . "\n", 8) . "-->\n";

@@ -5,13 +5,8 @@
  * Documentation: https://github.com/Lyquix/php-git-deploy
  */
 
-/*
- * ENABLED
- * Set to false to prevent the execution of this script
- * Useful to control activation of this script only when needed
- *
- */
-define('ENABLED', true);
+/* DISABLED: Set to true to prevent the execution of this script. cript only when needed */
+define('DISABLED', false);
 
 /*
  * REMOTE_REPOSITORY:
