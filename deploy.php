@@ -384,7 +384,7 @@ cmd(sprintf(
 ));
 ?>
 
-Done in <?php echo $time += microtime(true); ?>sec
+Done in <?php echo $time + microtime(true); ?>sec
 </pre>
 </body>
 </html>
