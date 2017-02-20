@@ -5,6 +5,11 @@
  * Documentation: https://github.com/Lyquix/php-git-deploy
  */
 
+// Prevent caching
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
 // Check if lock file exists
 if (file_exists(__DIR__ . '/deploy.lock')) {
 	die('File deploy.lock detected, another process already running');
@@ -42,10 +47,6 @@ if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || ACCESS_TOKEN === '' || 
 	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
 }
 
-// Prevent caching
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Cache-Control: post-check=0, pre-check=0", false);
-header("Pragma: no-cache");
 if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || ENABLED !== true) {
 	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
 	removeLockFile();
