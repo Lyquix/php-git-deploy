@@ -5,6 +5,9 @@
  * Documentation: https://github.com/Lyquix/php-git-deploy
  */
 
+// Measure execution time
+$time = -microtime(true);
+
 // Prevent caching
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
@@ -352,7 +355,7 @@ cmd(sprintf(
 removeLockFile();
 ?>
 
-Done.
+Done in <?php echo $time += microtime(true); ?>sec
 </pre>
 </body>
 </html>
