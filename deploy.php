@@ -5,17 +5,8 @@
  * Documentation: https://github.com/Lyquix/php-git-deploy
  */
 
-// Measure execution time
-$time = -microtime(true);
+/* Functions */
 
-// Prevent caching
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Cache-Control: post-check=0, pre-check=0", false);
-header("Pragma: no-cache");
-
-// Start output buffering
-ob_start('obHandler');
-$output = '';
 // Output buffering handler
 function obHandler($buffer) {
 	global $output;
@@ -23,17 +14,16 @@ function obHandler($buffer) {
 	return $buffer;
 }
 
-// Check if lock file exists
-if (file_exists(__DIR__ . '/deploy.lock')) {
+// Render error page
+function errorPage($msg) {
 	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
-	echo "<html>\n<body>\n<h2>File deploy.lock detected, another process already running</h2>\n</body>\n</html>\n";
-	echo "<!--\n~~~~~~~~~~~~~ Prevent browser friendly error page ~~~~~~~~~~~~~~\n" . str_repeat(str_repeat("~", 64) . "\n", 8) . "-->\n";
-	die();
+	echo "<html>\n<body>\n"
+		 . $msg . "\n"
+		 . "</body>\n</html>\n"
+		 . "<!--\n~~~~~~~~~~~~~ Prevent browser friendly error page ~~~~~~~~~~~~~~\n"
+		 . str_repeat(str_repeat("~", 64) . "\n", 8) 
+		 . "-->\n";
 }
-
-// Create lock file
-$fh = fopen(__DIR__ . '/deploy.lock', 'w');
-fclose($fh);
 
 // Command to execute at the end of the script
 function endScript() {
@@ -47,9 +37,9 @@ function endScript() {
 	$output = preg_replace('/<script[\s\w\W\n]+<\/script>/m', '', $output);
 	$output = preg_replace('/<style[\s\w\W\n]+<\/style>/m', '', $output);
 	// Add heading and strip tags
-	$output = 	str_repeat("~", 80) . "\n" . 
-				'[' . date('c') . '] - ' . $_SERVER['REMOTE_ADDR'] . " - b=" . $_GET['b'] . ' c=' . $_GET['c'] . "\n" . 
-				strip_tags($output);
+	$output = str_repeat("~", 80) . "\n"
+			  . '[' . date('c') . '] - ' . $_SERVER['REMOTE_ADDR'] . " - b=" . $_GET['b'] . ' c=' . $_GET['c'] . "\n"
+			  . strip_tags($output);
 	// Decode HTML entities
 	$output = html_entity_decode($output);
 	// Collapse multiple blank lines into one
@@ -60,13 +50,36 @@ function endScript() {
 	if(defined('EMAIL_NOTIFICATIONS') && EMAIL_NOTIFICATIONS !== '') error_log($output, 1, EMAIL_NOTIFICATIONS);
 }
 
+/* Begin Script */
+
+// Measure execution time
+$time = -microtime(true);
+
+// Prevent caching
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
+// Start output buffering
+ob_start('obHandler');
+$output = '';
+
+// Check if lock file exists
+if (file_exists(__DIR__ . '/deploy.lock')) {
+	errorPage('<h2>File deploy.lock detected, another process already running</h2>');
+	endScript();
+	die();
+}
+
+// Create lock file
+$fh = fopen(__DIR__ . '/deploy.lock', 'w');
+fclose($fh);
+
 // Check if there is a configuration file
 if (file_exists(__DIR__ . '/deploy-config.php')) {
 	require_once __DIR__ . '/deploy-config.php';
 } else {
-	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
-	echo "<html>\n<body>\n<h2>File deploy-config.php does not exist</h2>\n</body>\n</html>\n";
-	echo "<!--\n~~~~~~~~~~~~~ Prevent browser friendly error page ~~~~~~~~~~~~~~\n" . str_repeat(str_repeat("~", 64) . "\n", 8) . "-->\n";
+	errorPage('<h2>File deploy-config.php does not exist</h2>');
 	endScript();
 	die();
 }
@@ -82,17 +95,13 @@ if (!defined('TIME_LIMIT')) define('TIME_LIMIT', 60);
 
 // If there's authorization error
 if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || DISABLED === true) {
-	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
-	echo "<html>\n<body>\n<h2>Access Denied</h2>\n</body>\n</html>\n";
-	echo "<!--\n~~~~~~~~~~~~~ Prevent browser friendly error page ~~~~~~~~~~~~~~\n" . str_repeat(str_repeat("~", 64) . "\n", 8) . "-->\n";
+	errorPage('<h2>Access Denied</h2>');
 	endScript();
 	die();
 }
 // If there is a configuration error
 if (count($err)) {
-	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
-	echo "<html>\n<body>\n<h2>Configuration Error</h2>\n<pre>\n" . implode("\n", $err) . "\n</pre>\n</body>\n</html>\n";
-	echo "<!--\n~~~~~~~~~~~~~ Prevent browser friendly error page ~~~~~~~~~~~~~~\n" . str_repeat(str_repeat("~", 64) . "\n", 8) . "-->\n";
+	errorPage('<h2>Configuration Error</h2>\n<pre>\n" . implode("\n", $err) . "\n</pre>');
 	endScript();
 	die();
 }
