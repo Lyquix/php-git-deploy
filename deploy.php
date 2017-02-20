@@ -22,8 +22,9 @@ if (file_exists(__DIR__ . '/deploy.lock')) {
 $fh = fopen(__DIR__ . '/deploy.lock', 'w');
 fclose($fh);
 
-// Remove lock file
-function removeLockFile() {
+// Command to execute at the end of the script
+function endScript() {
+	// Remove lock file
 	unlink(__DIR__ . '/deploy.lock');
 }
 
@@ -31,8 +32,8 @@ function removeLockFile() {
 if (file_exists(__DIR__ . '/deploy-config.php')) {
 	require_once __DIR__ . '/deploy-config.php';
 } else {
-	removeLockFile();
 	die('File deploy-config.php does not exist');
+	endScript();
 }
 
 // Check configuration errors
@@ -52,16 +53,16 @@ if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || ACCESS_TOKEN === '' || 
 
 if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || ENABLED !== true) {
 	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
-	removeLockFile();
 	echo "<html>\n<body>\n<h2>Access Denied</h2>\n</body>\n</html>\n";
 	echo "<!--\n~~~~~~~~~~~~~ Prevent browser friendly error page ~~~~~~~~~~~~~~\n" . str_repeat(str_repeat("~", 64) . "\n", 8) . "-->\n";
+	endScript();
 	die();
 }
 if (count($err) || ACCESS_TOKEN === '' || REMOTE_REPOSITORY === '' || BRANCH === '' || GIT_DIR === '' || TARGET_DIR === '') {
 	header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
-	removeLockFile();
 	echo "<html>\n<body>\n<h2>Configuration Error</h2>\n<pre>\n" . implode("\n", $err) . "\n</pre>\n</body>\n</html>\n";
 	echo "<!--\n~~~~~~~~~~~~~ Prevent browser friendly error page ~~~~~~~~~~~~~~\n" . str_repeat(str_repeat("~", 64) . "\n", 8) . "-->\n";
+	endScript();
 	die();
 }
 ?>
@@ -101,7 +102,7 @@ if(isset($headers['X-Event-Key'])) {
 		$branch = $payload->pullrequest->destination->branch->name;
 	} else {
 		echo "\nOnly push and merged pull request events are processed\n\nDone.\n</pre></body></html>";
-		removeLockFile();
+		endScript();
 		exit;
 	}
 } else if(isset($headers['X-GitHub-Event'])) {
@@ -119,7 +120,7 @@ if(isset($headers['X-Event-Key'])) {
 		$branch = $payload->pull_request->head->ref;
 	} else {
 		echo "\nOnly push and merged pull request events are processed\n\nDone.\n</pre></body></html>";
-		removeLockFile();
+		endScript();
 		exit;
 	}
 }
@@ -129,7 +130,7 @@ if($branch) {
 	// Only main branch is allowed for webhook deployments
 	if($branch != unserialize(BRANCH)[0]) {
 		echo "\nBranch $branch not allowed, stopping execution.\n</pre></body></html>";
-		removeLockFile();
+		endScript();
 		exit;
 	}
 
@@ -140,7 +141,7 @@ if($branch) {
 		// Check if branch is allowed
 		if(!in_array($branch, unserialize(BRANCH))) {
 			echo "\nBranch $branch not allowed, stopping execution.\n</pre></body></html>";
-			removeLockFile();
+			endScript();
 			exit;
 		}
 	} else {
@@ -158,7 +159,7 @@ foreach ($requiredBinaries as $command) {
 	$path = trim(shell_exec('which '.$command));
 	if ($path == '') {
 		header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
-		removeLockFile();
+		endScript();
 		die(sprintf('<div class="error"><b>%s</b> not available. It needs to be installed on the server for this script to work.</div>', $command));
 	} else {
 		$version = explode("\n", shell_exec($command.' --version'));
@@ -201,7 +202,7 @@ function cmd($command, $print = true) {
 CHECK THE DATA IN YOUR TARGET DIR!</span>
 '
 		);
-		removeLockFile();
+		endScript();
 		exit;
 	}
 
@@ -350,12 +351,12 @@ cmd(sprintf(
 	, $checkout
 	, TARGET_DIR . 'VERSION'
 ));
-
-// Remove lock file
-removeLockFile();
 ?>
 
 Done in <?php echo $time += microtime(true); ?>sec
 </pre>
 </body>
 </html>
+<?php 
+endScript(); 
+exit;
