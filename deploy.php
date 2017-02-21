@@ -5,6 +5,9 @@
  * Documentation: https://github.com/Lyquix/php-git-deploy
  */
 
+// Measure execution time
+$time = -microtime(true);
+
 /* Functions */
 
 // Output buffering handler
@@ -50,10 +53,7 @@ function endScript() {
 	if(defined('EMAIL_NOTIFICATIONS') && EMAIL_NOTIFICATIONS !== '') error_log($output, 1, EMAIL_NOTIFICATIONS);
 }
 
-/* Begin Script */
-
-// Measure execution time
-$time = -microtime(true);
+/* Begin Script Execution */
 
 // Prevent caching
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
@@ -63,17 +63,6 @@ header("Pragma: no-cache");
 // Start output buffering
 ob_start('obHandler');
 $output = '';
-
-// Check if lock file exists
-if (file_exists(__DIR__ . '/deploy.lock')) {
-	errorPage('<h2>File deploy.lock detected, another process already running</h2>');
-	endScript();
-	die();
-}
-
-// Create lock file
-$fh = fopen(__DIR__ . '/deploy.lock', 'w');
-fclose($fh);
 
 // Check if there is a configuration file
 if (file_exists(__DIR__ . '/deploy-config.php')) {
@@ -93,15 +82,27 @@ if (!defined('GIT_DIR') || GIT_DIR === '') $err[] = 'Git directory is not config
 if (!defined('TARGET_DIR') || TARGET_DIR === '') $err[] = 'Target directory is not configured';
 if (!defined('TIME_LIMIT')) define('TIME_LIMIT', 60);
 
-// If there's authorization error
-if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || DISABLED === true) {
-	errorPage('<h2>Access Denied</h2>');
+// If there is a configuration error
+if (count($err)) {
+	errorPage("<h2>Configuration Error</h2>\n<pre>\n" . implode("\n", $err) . "\n</pre>");
 	endScript();
 	die();
 }
-// If there is a configuration error
-if (count($err)) {
-	errorPage('<h2>Configuration Error</h2>\n<pre>\n" . implode("\n", $err) . "\n</pre>');
+
+// Check if lock file exists
+if (file_exists(__DIR__ . '/deploy.lock')) {
+	errorPage('<h2>File deploy.lock detected, another process already running</h2>');
+	endScript();
+	die();
+}
+
+// Create lock file
+$fh = fopen(__DIR__ . '/deploy.lock', 'w');
+fclose($fh);
+
+// If there's authorization error
+if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || DISABLED === true) {
+	errorPage('<h2>Access Denied</h2>');
 	endScript();
 	die();
 }
