@@ -100,6 +100,41 @@ if (file_exists(__DIR__ . '/deploy.lock')) {
 $fh = fopen(__DIR__ . '/deploy.lock', 'w');
 fclose($fh);
 
+// Check if IP is allowed
+if(defined('IP_ALLOW') && count(unserialize(IP_ALLOW))) {
+	$allow = false;
+	foreach(unserialize(IP_ALLOW) as $ip_allow) {
+		if(strpos($ip_allow, '/') === false) {
+			// Single IP
+			if(inet_pton($_SERVER['REMOTE_ADDR']) == inet_pton($ip_allow)) {
+				$allow = true;
+				break;
+			}
+		}
+		else {
+			// IP range
+			list($subnet, $bits) = explode('/', $ip_allow);
+			// Convert subnet to binary string of $bits length
+			$subnet = unpack('H*', inet_pton($subnet));
+			foreach($subnet as $i => $h) $subnet[$i] = base_convert($h, 16, 2);
+			$subnet = substr(implode('', $subnet), 0, $bits);
+			// Convert remote IP to binary string of $bits length
+			$ip = unpack('H*', inet_pton($_SERVER['REMOTE_ADDR']));
+			foreach($ip as $i => $h) $ip[$i] = base_convert($h, 16, 2);
+			$ip = substr(implode('', $ip), 0, $bits);
+			if($subnet == $ip) {
+				$allow = true;
+				break;
+			}
+		}
+	}
+	if(!$allow) {
+		errorPage('<h2>Access Denied</h2>');
+		endScript();
+		die();
+	}
+}
+
 // If there's authorization error
 if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || DISABLED === true) {
 	errorPage('<h2>Access Denied</h2>');
