@@ -168,6 +168,7 @@ You must keep in mind that this script can be dangerous if misused or abused. We
  * `File deploy.lock detected, another process already running`: if the script execution is interrupted, the deploy.lock file is not automatically deleted. If you are sure no other deployments are in progress, you can delete this file to allow for the script to run.
  * `Access Denied`: either no access token was provided in the URL, or the wrong token was provided.
  * `Branch BRANCH not allowed, stopping execution`: you need to add the branch you are trying to deploy to the branch array in the configuration file.
+ * If the script works correctly when triggered manually but the automatic webhooks don't seem to be doing anything check the webhook requests log in BitBucket/GitHub to find out if they are having any problem reaching your server and script. Remember that the script URL has to be accessible from the public Internet, and if you have an HTTP password, you need to include it in the webhook URL.
 
 ## Acknowledgements & References
 
