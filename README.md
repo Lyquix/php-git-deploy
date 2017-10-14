@@ -93,6 +93,8 @@ If you are using a public repository you can start here.
   * __EMAIL_NOTIFICATIONS__: (optional) email address to which a copy of the script output will be sent
   * __TIME_LIMIT__: maximum time allowed for each command, in seconds. 60 should be fine unless your deployments are massive. Adjust if necessary.
 
+NOTE: do not include/track the files `deploy-config.php` and `VERSION` in your repository.
+
 ## Repository Setup
 
 If you are using a private repository you need to copy the public key to your repository:
