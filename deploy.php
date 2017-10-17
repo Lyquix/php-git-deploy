@@ -358,7 +358,11 @@ cmd(sprintf(
 
 // Update the submodules
 echo "\nUpdating git submodules in git directory\n";
-cmd('git submodule update --init --recursive');
+cmd(sprintf(
+	'git --git-dir="%s.git" --work-tree="%s" submodule update --init --recursive'
+	, GIT_DIR
+	, GIT_DIR
+));	
 
 // Get current version or assume oldest commit
 if(file_exists(TARGET_DIR . 'VERSION')) {
