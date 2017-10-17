@@ -33,9 +33,15 @@ You can also trigger the script manually. If no GET parameters are passed in the
 * `exec` must be allowed in PHP scripts
 * Access to the repository
 
-## Server Setup
+NOTE: this script was developed and tested using:
 
-These instructions were created for Ubuntu 14.04 and tested also on Ubuntu 16.04. You should be able to adjust them to other Linux distros.
+ * git 2.9 and later
+ * rsync 3.1.2
+ * Ubuntu 14.04 and 16.04
+
+We recommend using up-to-date versions of git and rsync. If you are using a different distribution of Linux you should be able to easily adapt the server setup instructions.
+
+## Server Setup
 
 If you are using a private repository start here. If you are using a public repository you can jump ahead to the point indicated below.
 
