@@ -100,6 +100,8 @@ If you are using a public repository you can start here.
   * __TIME_LIMIT__: maximum time allowed for each command, in seconds. 60 should be fine unless your deployments are massive. Adjust if necessary.
   * __EXCLUDE_FILES__: (optional) array of files or filename patterns which won't be copied to `TARGET_DIR` . By default it's `.git`.
   * __RSYNC_FLAGS__: (optional) override rsync flags. By default, it's `-rltgoDzvO` .
+  * __COMMANDS_BEFORE_RSYNC__: (optional) array of commands executed between pulling remote repository and copying files to target directory. These commands are executed under `GIT_DIR` directory.
+  * __COMMANDS_AFTER_RSYNC__: (optional) array of commands executed after copying files to target directory. These commands are executed under `TARGET_DIR` directory.
 
 NOTE: do not include/track the files `deploy-config.php` and `VERSION` in your repository.
 

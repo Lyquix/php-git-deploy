@@ -256,10 +256,10 @@ to        : <?php echo TARGET_DIR; ?>
 
 <?php
 // Runs shell commands in Git directory, outputs command and result
-function cmd($command, $print = true) {
+function cmd($command, $print = true, $dir = GIT_DIR) {
 	set_time_limit(TIME_LIMIT); // Reset the time limit for each command
-	if (file_exists(GIT_DIR) && is_dir(GIT_DIR)) {
-		chdir(GIT_DIR); // Ensure that we're in the right directory
+	if (file_exists($dir) && is_dir($dir)) {
+		chdir($dir); // Ensure that we're in the right directory
 	}
 	$tmp = array();
 	exec($command.' 2>&1', $tmp, $return_code); // Execute the command
@@ -415,6 +415,14 @@ printf(
 );
 echo "\nNOTE: repository files that have been modfied or removed in target directory will be resynced with repository even if not listed in commits\n";
 
+// Run before rsync commands
+if(defined('COMMANDS_BEFORE_RSYNC') && count(unserialize(COMMANDS_BEFORE_RSYNC))) {
+	echo "\nRunning before rsync commands\n";
+	foreach(unserialize(COMMANDS_BEFORE_RSYNC) as $command) {
+		cmd($command);
+	}
+}
+
 // Build exclusion list
 $exclude = unserialize(EXCLUDE_FILES);
 array_unshift($exclude, '');
@@ -431,6 +439,14 @@ echo "\nDeleting files removed from repository\n";
 
 // Delete files removed in commits
 foreach($deleted as $file) unlink($file);
+
+// Run after rsync commands
+if(defined('COMMANDS_AFTER_RSYNC') && count(unserialize(COMMANDS_AFTER_RSYNC))) {
+	echo "\nRunning after rsync commands\n";
+	foreach(unserialize(COMMANDS_AFTER_RSYNC) as $command) {
+		cmd($command, true, TARGET_DIR);
+	}
+}
 
 // Update version file to current commit
 echo "\nUpdate target directory version file to commit $checkout\n";

@@ -82,3 +82,19 @@ define('EXCLUDE_FILES', serialize(array('.git')));
  * useful for vhosts than require separate group for document_root to be accessible by webserver)
  */
 define('RSYNC_FLAGS', '-rltgoDzvO');
+
+/* COMMANDS_BEFORE_RSYNC:
+ * Run commands before running rsync. Default: empty array
+ * This commands will be run under GIT_DIR after checkout from remote repository
+ * Useful for running build tasks
+ * Example: define('COMMANDS_BEFORE_RSYNC', serialize(array('composer install')));
+ */
+define('COMMANDS_BEFORE_RSYNC', serialize(array()));
+
+/* COMMANDS_AFTER_RSYNC:
+ * Run commands after running rsync. Default: empty array
+ * This commands will be run under TARGET_DIR after copying files from GIT_DIR
+ * Useful for doing some cleanups 
+ * Example: define('COMMANDS_AFTER_RSYNC', serialize(array('rm cache/*.php -f')));
+ */
+define('COMMANDS_AFTER_RSYNC', serialize(array()));
