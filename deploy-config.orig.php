@@ -64,3 +64,21 @@ define('EMAIL_NOTIFICATIONS', '');
 
 /* TIME_LIMIT: Time limit for each command */
 define('TIME_LIMIT', 60);
+
+/* EXCLUDE_FILES: 
+ * Array of files excluded from rsync (they will appear in GIT_DIR, but not in TARGET_DIR)
+ * By default, only .git directory is excluded. 
+ * It's recommended to leave '.git' excluded and add something more if needed.
+ * Example: define('EXCLUDE_FILES', serialize(array('.git', '.gitignore', '*.less', '*.scss')));
+ *
+ */
+define('EXCLUDE_FILES', serialize(array('.git')));
+
+/* RSYNC_FLAGS: 
+ * Custom flags to run rsync with
+ * Default: '-rltgoDzvO'
+ * Do not change them if not necessary
+ * Example: '-rltDzvO' (don't changes owner:group of copied files,
+ * useful for vhosts than require separate group for document_root to be accessible by webserver)
+ */
+define('RSYNC_FLAGS', '-rltgoDzvO');

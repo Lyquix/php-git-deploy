@@ -81,6 +81,8 @@ if (!defined('BRANCH') || BRANCH === '') $err[] = 'Branch is not configured';
 if (!defined('GIT_DIR') || GIT_DIR === '') $err[] = 'Git directory is not configured';
 if (!defined('TARGET_DIR') || TARGET_DIR === '') $err[] = 'Target directory is not configured';
 if (!defined('TIME_LIMIT')) define('TIME_LIMIT', 60);
+if (!defined('EXCLUDE_FILES')) define('EXCLUDE_FILES', serialize(array('.git')));
+if (!defined('RSYNC_FLAGS')) define('RSYNC_FLAGS', '-rltgoDzvO');
 
 // If there is a configuration error
 if (count($err)) {
@@ -413,11 +415,17 @@ printf(
 );
 echo "\nNOTE: repository files that have been modfied or removed in target directory will be resynced with repository even if not listed in commits\n";
 
-// rsync all added and modified files (no deletes, exclude .git directory)
+// Build exclusion list
+$exclude = unserialize(EXCLUDE_FILES);
+array_unshift($exclude, '');
+
+// rsync all added and modified files (by default: no deletes, exclude .git directory)
 cmd(sprintf(
-	'rsync -rltgoDzvO %s %s --exclude=.git'
+	'rsync %s %s %s %s'
+	, RSYNC_FLAGS
 	, GIT_DIR
 	, TARGET_DIR
+	, implode(' --exclude=', $exclude)
 ));
 echo "\nDeleting files removed from repository\n";
 

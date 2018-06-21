@@ -98,6 +98,8 @@ If you are using a public repository you can start here.
   * __LOG_FILE__: (optional) the full path of file to log all script output
   * __EMAIL_NOTIFICATIONS__: (optional) email address to which a copy of the script output will be sent
   * __TIME_LIMIT__: maximum time allowed for each command, in seconds. 60 should be fine unless your deployments are massive. Adjust if necessary.
+  * __EXCLUDE_FILES__: (optional) array of files or filename patterns which won't be copied to `TARGET_DIR` . By default it's `.git`.
+  * __RSYNC_FLAGS__: (optional) override rsync flags. By default, it's `-rltgoDzvO` .
 
 NOTE: do not include/track the files `deploy-config.php` and `VERSION` in your repository.
 
