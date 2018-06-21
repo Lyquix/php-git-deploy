@@ -102,6 +102,7 @@ If you are using a public repository you can start here.
   * __RSYNC_FLAGS__: (optional) override rsync flags. By default, it's `-rltgoDzvO` .
   * __COMMANDS_BEFORE_RSYNC__: (optional) array of commands executed between pulling remote repository and copying files to target directory. These commands are executed under `GIT_DIR` directory.
   * __COMMANDS_AFTER_RSYNC__: (optional) array of commands executed after copying files to target directory. These commands are executed under `TARGET_DIR` directory.
+  * __CLEANUP_WORK_TREE__: (optional) set to `true` if you want to clean `GIT_DIR` from intermediate files created by custom commands and rebuild project from scratch every time. Does not affect `TARGET_DIR` at all.
 
 NOTE: do not include/track the files `deploy-config.php` and `VERSION` in your repository.
 

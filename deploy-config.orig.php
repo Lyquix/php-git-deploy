@@ -98,3 +98,11 @@ define('COMMANDS_BEFORE_RSYNC', serialize(array()));
  * Example: define('COMMANDS_AFTER_RSYNC', serialize(array('rm cache/*.php -f')));
  */
 define('COMMANDS_AFTER_RSYNC', serialize(array()));
+
+/* CLEANUP_WORK_TREE:
+ * Clean GIT_DIR from leftovers after custom commands
+ * Set to true if you wish to clean up GIT_DIR after running all custom commands
+ * Useful if your custom commands create intermediate files you want not to keep between deployments
+ * However, intermediate files would not be cleaned up from TARGET_DIR
+ */
+define('CLEANUP_WORK_TREE', false);

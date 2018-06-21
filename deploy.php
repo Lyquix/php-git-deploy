@@ -448,6 +448,16 @@ if(defined('COMMANDS_AFTER_RSYNC') && count(unserialize(COMMANDS_AFTER_RSYNC))) 
 	}
 }
 
+// Cleanup work tree from build results, etc
+if(defined('CLEANUP_WORK_TREE') && !empty(CLEANUP_WORK_TREE)){
+	echo "\nCleanup work tree\n";
+	cmd(sprintf(
+		'git --git-dir="%s.git" --work-tree="%s" clean -dfx'
+		, GIT_DIR
+		, GIT_DIR
+	));
+}
+
 // Update version file to current commit
 echo "\nUpdate target directory version file to commit $checkout\n";
 cmd(sprintf(
