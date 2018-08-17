@@ -198,3 +198,9 @@ You must keep in mind that this script can be dangerous if misused or abused. We
 [GitHub Webhook Event Review](https://developer.github.com/webhooks/)
 
 [GitHub Webhook Event Payloads](https://developer.github.com/v3/activity/events/types/)
+
+### Contributors
+
+  * [SagePtr](https://github.com/SagePtr)
+    * [Advanced deployment options](https://github.com/Lyquix/php-git-deploy/pull/4)
+
