@@ -64,3 +64,45 @@ define('EMAIL_NOTIFICATIONS', '');
 
 /* TIME_LIMIT: Time limit for each command */
 define('TIME_LIMIT', 60);
+
+/* EXCLUDE_FILES: 
+ * Array of files excluded from rsync (they will appear in GIT_DIR, but not in TARGET_DIR)
+ * By default, only .git directory is excluded. 
+ * It's recommended to leave '.git' excluded and add something more if needed.
+ * Example: define('EXCLUDE_FILES', serialize(array('.git', '.gitignore', '*.less', '*.scss')));
+ *
+ */
+define('EXCLUDE_FILES', serialize(array('.git')));
+
+/* RSYNC_FLAGS: 
+ * Custom flags to run rsync with
+ * Default: '-rltgoDzvO'
+ * Do not change them if not necessary
+ * Example: '-rltDzvO' (don't changes owner:group of copied files,
+ * useful for vhosts than require separate group for document_root to be accessible by webserver)
+ */
+define('RSYNC_FLAGS', '-rltgoDzvO');
+
+/* COMMANDS_BEFORE_RSYNC:
+ * Run commands before running rsync. Default: empty array
+ * This commands will be run under GIT_DIR after checkout from remote repository
+ * Useful for running build tasks
+ * Example: define('COMMANDS_BEFORE_RSYNC', serialize(array('composer install')));
+ */
+define('COMMANDS_BEFORE_RSYNC', serialize(array()));
+
+/* COMMANDS_AFTER_RSYNC:
+ * Run commands after running rsync. Default: empty array
+ * This commands will be run under TARGET_DIR after copying files from GIT_DIR
+ * Useful for doing some cleanups 
+ * Example: define('COMMANDS_AFTER_RSYNC', serialize(array('rm cache/*.php -f')));
+ */
+define('COMMANDS_AFTER_RSYNC', serialize(array()));
+
+/* CLEANUP_WORK_TREE:
+ * Clean GIT_DIR from leftovers after custom commands
+ * Set to true if you wish to clean up GIT_DIR after running all custom commands
+ * Useful if your custom commands create intermediate files you want not to keep between deployments
+ * However, intermediate files would not be cleaned up from TARGET_DIR
+ */
+define('CLEANUP_WORK_TREE', false);
