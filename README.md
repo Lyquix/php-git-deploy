@@ -17,6 +17,8 @@ The script fetches the repository and then checks out the most recent commit in 
 
 Any other files that exist in the target directory that are not tracked in the repo are not affected. This normally includes media files, configuration files, etc.
 
+Optionally, you can specify commands to be executed in the git directory before rsync, and commands to be executed in the target directory after rsync.
+
 At the end of each execution, the script writes a `VERSION` file in the target directory that contains the hash value of the latest commit that has been deployed. This is used in subsequent executions of the script to determine what is the last commit that was deployed and what files need to be deleted. If no version file is found the script assumes that there have been no previous deployments.
 
 ### Manual Use
