@@ -77,6 +77,15 @@ define('EXCLUDE_FILES', serialize(array('.git')));
 /* RSYNC_FLAGS: 
  * Custom flags to run rsync with
  * Default: '-rltgoDzvO'
+ *  -r recursive
+ *  -l recreate symlinks at destination
+ *  -t tranfer modification time
+ *  -g preserve group ownership
+ *  -o preserve owner
+ *  -D transfer special files
+ *  -z compress files during transfer
+ *  -v verbose
+ *  -O omit directories when preserving modification times
  * Do not change them if not necessary
  * Example: '-rltDzvO' (don't changes owner:group of copied files,
  * useful for vhosts than require separate group for document_root to be accessible by webserver)
