@@ -205,4 +205,6 @@ You must keep in mind that this script can be dangerous if misused or abused. We
 
   * [SagePtr](https://github.com/SagePtr)
     * [Advanced deployment options](https://github.com/Lyquix/php-git-deploy/pull/4)
+  * [7twin](https://github.com/7twin)
+    * [Workaround for getallheaders() not available in PHP-FPM](https://github.com/Lyquix/php-git-deploy/pull/5)
 
