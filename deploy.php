@@ -51,6 +51,13 @@ function endScript($msg = "") {
 	if(defined('LOG_FILE') && LOG_FILE !== '') error_log($output, 3, LOG_FILE);
 	// Send email notification
 	if(defined('EMAIL_NOTIFICATIONS') && EMAIL_NOTIFICATIONS !== '') error_log($output, 1, EMAIL_NOTIFICATIONS);
+	// Send error callback
+	if($msg && defined('CALLBACK_FILE') && file_exists(CALLBACK_FILE)){
+		require_once CALLBACK_FILE;
+		if(function_exists(callbackError)) {
+			callbackError($msg);
+		}
+	}
 	die($msg);
 }
 
@@ -475,6 +482,18 @@ cmd(sprintf(
 	, $checkout
 	, TARGET_DIR . 'VERSION'
 ));
+
+// Send success callback
+if(defined('CALLBACK_FILE') && file_exists(CALLBACK_FILE)){
+	require_once CALLBACK_FILE;
+	if(function_exists(callbackSuccess)) {
+		callbackSuccess(array(
+			'branch' => $branch,
+			'commit' => $checkout,
+			'execTime' => $time + microtime(true)
+		));
+	}
+}
 ?>
 
 Done in <?php echo $time + microtime(true); ?>sec

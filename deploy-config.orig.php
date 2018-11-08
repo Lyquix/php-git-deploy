@@ -115,3 +115,10 @@ define('COMMANDS_AFTER_RSYNC', serialize(array()));
  * However, intermediate files would not be cleaned up from TARGET_DIR
  */
 define('CLEANUP_WORK_TREE', false);
+
+/* CALLBACK_FILE:
+ * Filename of a PHP script containing callback functions to
+ * be triggered at the end of the script on success or failure.
+ * Useful to connect to your preferred notification system.
+ */
+define('CALLBACK_FILE', '');
