@@ -29,7 +29,7 @@ function errorPage($msg) {
 }
 
 // Command to execute at the end of the script
-function endScript() {
+function endScript($errorMessage = "") {
 	// Remove lock file
 	unlink(__DIR__ . '/deploy.lock');
 	// Flush buffer and prepare output for log and email
@@ -51,6 +51,7 @@ function endScript() {
 	if(defined('LOG_FILE') && LOG_FILE !== '') error_log($output, 3, LOG_FILE);
 	// Send email notification
 	if(defined('EMAIL_NOTIFICATIONS') && EMAIL_NOTIFICATIONS !== '') error_log($output, 1, EMAIL_NOTIFICATIONS);
+	die($errorMessage);
 }
 
 /* Begin Script Execution */
@@ -70,7 +71,6 @@ if (file_exists(__DIR__ . '/deploy-config.php')) {
 } else {
 	errorPage('<h2>File deploy-config.php does not exist</h2>');
 	endScript();
-	die();
 }
 
 // Check configuration errors
@@ -88,14 +88,12 @@ if (!defined('RSYNC_FLAGS')) define('RSYNC_FLAGS', '-rltgoDzvO');
 if (count($err)) {
 	errorPage("<h2>Configuration Error</h2>\n<pre>\n" . implode("\n", $err) . "\n</pre>");
 	endScript();
-	die();
 }
 
 // Check if lock file exists
 if (file_exists(__DIR__ . '/deploy.lock')) {
 	errorPage('<h2>File deploy.lock detected, another process already running</h2>');
 	endScript();
-	die();
 }
 
 // Create lock file
@@ -133,7 +131,6 @@ if(defined('IP_ALLOW') && count(unserialize(IP_ALLOW))) {
 	if(!$allow) {
 		errorPage('<h2>Access Denied</h2>');
 		endScript();
-		die();
 	}
 }
 
@@ -141,7 +138,6 @@ if(defined('IP_ALLOW') && count(unserialize(IP_ALLOW))) {
 if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || DISABLED === true) {
 	errorPage('<h2>Access Denied</h2>');
 	endScript();
-	die();
 }
 ?>
 <!DOCTYPE html>
@@ -193,7 +189,6 @@ if(isset($headers['X-Event-Key'])) {
 	} else {
 		echo "\nOnly push and merged pull request events are processed\n\nDone.\n</pre></body></html>";
 		endScript();
-		exit;
 	}
 } else if(isset($headers['X-GitHub-Event'])) {
 	// Github webhook
@@ -211,7 +206,6 @@ if(isset($headers['X-Event-Key'])) {
 	} else {
 		echo "\nOnly push and merged pull request events are processed\n\nDone.\n</pre></body></html>";
 		endScript();
-		exit;
 	}
 }
 
@@ -221,7 +215,6 @@ if($branch) {
 	if($branch != unserialize(BRANCH)[0]) {
 		echo "\nBranch $branch not allowed, stopping execution.\n</pre></body></html>";
 		endScript();
-		exit;
 	}
 
 } else {
@@ -232,7 +225,6 @@ if($branch) {
 		if(!in_array($branch, unserialize(BRANCH))) {
 			echo "\nBranch $branch not allowed, stopping execution.\n</pre></body></html>";
 			endScript();
-			exit;
 		}
 	} else {
 		$branch = unserialize(BRANCH)[0];
@@ -249,8 +241,7 @@ foreach ($requiredBinaries as $command) {
 	$path = trim(shell_exec('which '.$command));
 	if ($path == '') {
 		header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
-		endScript();
-		die(sprintf('<div class="error"><b>%s</b> not available. It needs to be installed on the server for this script to work.</div>', $command));
+		endScript(sprintf('<div class="error"><b>%s</b> not available. It needs to be installed on the server for this script to work.</div>', $command));
 	} else {
 		$version = explode("\n", shell_exec($command.' --version'));
 		printf('<b>%s</b> : %s'."\n"
@@ -293,7 +284,6 @@ CHECK THE DATA IN YOUR TARGET DIR!</span>
 '
 		);
 		endScript();
-		exit;
 	}
 
 	return $tmp;
@@ -484,5 +474,4 @@ Done in <?php echo $time + microtime(true); ?>sec
 </body>
 </html>
 <?php 
-endScript(); 
-exit;
+endScript();
