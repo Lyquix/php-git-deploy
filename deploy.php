@@ -165,7 +165,7 @@ h2, .error { color: #c33; }
 $branch = '';
 
 if (!function_exists('getallheaders')) {
-    function getallheaders() {
+	function getallheaders() {
 		$headers = [];
 		foreach ($_SERVER as $name => $value) {
 			if (substr($name, 0, 5) == 'HTTP_') {
@@ -173,7 +173,7 @@ if (!function_exists('getallheaders')) {
 			}
 		}
 		return $headers;
-    }
+	}
 }
 
 // Process request headers
