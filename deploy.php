@@ -24,12 +24,12 @@ function errorPage($msg) {
 		 . $msg . "\n"
 		 . "</body>\n</html>\n"
 		 . "<!--\n~~~~~~~~~~~~~ Prevent browser friendly error page ~~~~~~~~~~~~~~\n"
-		 . str_repeat(str_repeat("~", 64) . "\n", 8) 
+		 . str_repeat(str_repeat("~", 64) . "\n", 8)
 		 . "-->\n";
 }
 
 // Command to execute at the end of the script
-function endScript($errorMessage = "") {
+function endScript($msg = "") {
 	// Remove lock file
 	unlink(__DIR__ . '/deploy.lock');
 	// Flush buffer and prepare output for log and email
@@ -51,7 +51,7 @@ function endScript($errorMessage = "") {
 	if(defined('LOG_FILE') && LOG_FILE !== '') error_log($output, 3, LOG_FILE);
 	// Send email notification
 	if(defined('EMAIL_NOTIFICATIONS') && EMAIL_NOTIFICATIONS !== '') error_log($output, 1, EMAIL_NOTIFICATIONS);
-	die($errorMessage);
+	die($msg);
 }
 
 /* Begin Script Execution */
@@ -69,8 +69,9 @@ $output = '';
 if (file_exists(__DIR__ . '/deploy-config.php')) {
 	require_once __DIR__ . '/deploy-config.php';
 } else {
-	errorPage('<h2>File deploy-config.php does not exist</h2>');
-	endScript();
+	$msg = 'File deploy-config.php does not exist';
+	errorPage('<h2>'. $msg . '</h2>');
+	endScript($msg);
 }
 
 // Check configuration errors
@@ -87,13 +88,14 @@ if (!defined('RSYNC_FLAGS')) define('RSYNC_FLAGS', '-rltgoDzvO');
 // If there is a configuration error
 if (count($err)) {
 	errorPage("<h2>Configuration Error</h2>\n<pre>\n" . implode("\n", $err) . "\n</pre>");
-	endScript();
+	endScript("Configuration Error:\n\n" . implode("\n", $err));
 }
 
 // Check if lock file exists
 if (file_exists(__DIR__ . '/deploy.lock')) {
-	errorPage('<h2>File deploy.lock detected, another process already running</h2>');
-	endScript();
+	$msg = 'File deploy.lock detected, another process already running';
+	errorPage('<h2>' . $msg . '</h2>');
+	endScript($msg);
 }
 
 // Create lock file
@@ -129,15 +131,17 @@ if(defined('IP_ALLOW') && count(unserialize(IP_ALLOW))) {
 		}
 	}
 	if(!$allow) {
-		errorPage('<h2>Access Denied</h2>');
-		endScript();
+		$msg = 'Access Denied';
+		errorPage('<h2>' . $msg . '</h2>');
+		endScript($msg);
 	}
 }
 
 // If there's authorization error
 if (!isset($_GET['t']) || $_GET['t'] !== ACCESS_TOKEN || DISABLED === true) {
-	errorPage('<h2>Access Denied</h2>');
-	endScript();
+	$msg = 'Access Denied';
+	errorPage('<h2>' . $msg . '</h2>');
+	endScript($msg);
 }
 ?>
 <!DOCTYPE html>
@@ -187,8 +191,9 @@ if(isset($headers['X-Event-Key'])) {
 		// Check branch
 		$branch = $payload->pullrequest->destination->branch->name;
 	} else {
-		echo "\nOnly push and merged pull request events are processed\n\nDone.\n</pre></body></html>";
-		endScript();
+		$msg = 'Only push and merged pull request events are processed';
+		echo "\n" . $msg . "\n\nDone.\n</pre></body></html>";
+		endScript($msg);
 	}
 } else if(isset($headers['X-GitHub-Event'])) {
 	// Github webhook
@@ -204,8 +209,9 @@ if(isset($headers['X-Event-Key'])) {
 		// Check branch
 		$branch = $payload->pull_request->head->ref;
 	} else {
-		echo "\nOnly push and merged pull request events are processed\n\nDone.\n</pre></body></html>";
-		endScript();
+		$msg = 'Only push and merged pull request events are processed';
+		echo "\n" . $msg . "\n\nDone.\n</pre></body></html>";
+		endScript($msg);
 	}
 }
 
@@ -213,8 +219,9 @@ if(isset($headers['X-Event-Key'])) {
 if($branch) {
 	// Only main branch is allowed for webhook deployments
 	if($branch != unserialize(BRANCH)[0]) {
-		echo "\nBranch $branch not allowed, stopping execution.\n</pre></body></html>";
-		endScript();
+		$msg = 'Branch ' . $branch . ' not allowed, stopping execution.';
+		echo "\n" . $msg . "\n</pre></body></html>";
+		endScript($msg);
 	}
 
 } else {
@@ -223,9 +230,10 @@ if($branch) {
 		$branch = $_GET['b'];
 		// Check if branch is allowed
 		if(!in_array($branch, unserialize(BRANCH))) {
-			echo "\nBranch $branch not allowed, stopping execution.\n</pre></body></html>";
-			endScript();
-		}
+			$msg = 'Branch ' . $branch . ' not allowed, stopping execution.';
+			echo "\n" . $msg . "\n</pre></body></html>";
+			endScript($msg);
+			}
 	} else {
 		$branch = unserialize(BRANCH)[0];
 		echo "No branch specified, assuming default branch $branch\n";
@@ -241,7 +249,9 @@ foreach ($requiredBinaries as $command) {
 	$path = trim(shell_exec('which '.$command));
 	if ($path == '') {
 		header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
-		endScript(sprintf('<div class="error"><b>%s</b> not available. It needs to be installed on the server for this script to work.</div>', $command));
+		$msg = $command . ' not available. It needs to be installed on the server for this script to work.';
+		echo $msg;
+		endScript($msg);
 	} else {
 		$version = explode("\n", shell_exec($command.' --version'));
 		printf('<b>%s</b> : %s'."\n"
@@ -279,11 +289,9 @@ function cmd($command, $print = true, $dir = GIT_DIR) {
 	// Error handling and cleanup
 	if($print && $return_code !== 0) {
 		header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
-		printf('<span class="error">Error encountered! Stopping the script to prevent possible data loss.
-CHECK THE DATA IN YOUR TARGET DIR!</span>
-'
-		);
-		endScript();
+		$msg = "Error encountered! Stopping the script to prevent possible data loss.\nCHECK THE DATA IN YOUR TARGET DIR!";
+		echo '<span class="error">' . $msg . '</span>';
+		endScript($msg);
 	}
 
 	return $tmp;
@@ -358,7 +366,7 @@ cmd(sprintf(
 	, GIT_DIR
 	, GIT_DIR
 	, $checkout
-));	
+));
 
 // Update the submodules
 echo "\nUpdating git submodules in git directory\n";
@@ -366,7 +374,7 @@ cmd(sprintf(
 	'git --git-dir="%s.git" --work-tree="%s" submodule update --init --recursive'
 	, GIT_DIR
 	, GIT_DIR
-));	
+));
 
 // Get current version or assume oldest commit
 if(file_exists(TARGET_DIR . 'VERSION')) {
@@ -473,5 +481,5 @@ Done in <?php echo $time + microtime(true); ?>sec
 </pre>
 </body>
 </html>
-<?php 
+<?php
 endScript();
