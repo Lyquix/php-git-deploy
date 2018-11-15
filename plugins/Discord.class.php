@@ -7,10 +7,11 @@
  * (OPTIONAL) DISCORD_AVATAR_URL: the image to be used as the avatar for the user sending the message
  */
 
-define("DISCORD_WEBHOOK",false);
-define("DISCORD_WEBHOOK_URL","");
-define("DISCORD_USER_NAME","");
-define("DISCORD_AVATAR_URL","");
+// allow for override by main configuration file
+if(!defined("DISCORD_WEBHOOK")) define("DISCORD_WEBHOOK",false);
+if(!defined("DISCORD_WEBHOOK_URL")) define("DISCORD_WEBHOOK_URL","");
+if(!defined("DISCORD_USER_NAME")) define("DISCORD_USER_NAME","");
+if(!defined("DISCORD_AVATAR_URL")) define("DISCORD_AVATAR_URL","");
 
 class Discord implements Plugin {
     public static function successWebhook($params){
