@@ -127,3 +127,8 @@ define('CLEANUP_WORK_TREE', false);
  */
 define('CALLBACK_CLASSES', array(
 ));
+
+/* PLUGINS_FOLDER:
+ * Folder containing all webhook plugins/classes, default: 'plugins/'
+ */
+define('PLUGINS_FOLDER','plugins/');

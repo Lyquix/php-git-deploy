@@ -12,7 +12,7 @@ $time = -microtime(true);
 spl_autoload_register(function($className){
 	$namespace=str_replace("\\","/",__NAMESPACE__);
 	$className=str_replace("\\","/",$className);
-	$class="plugins/".(empty($namespace)?"":$namespace."/")."{$className}.class.php";
+	$class=(!defined("PLUGINS_FOLDER") ? "plugins/" : PLUGINS_FOLDER).(empty($namespace)?"":$namespace."/")."{$className}.class.php";
 	include_once($class);
 });
 
