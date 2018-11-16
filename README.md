@@ -208,4 +208,5 @@ You must keep in mind that this script can be dangerous if misused or abused. We
   * [7twin](https://github.com/7twin)
     * [Workaround for getallheaders() not available in PHP-FPM](https://github.com/Lyquix/php-git-deploy/pull/5)
     * [Cleanup endScript()](https://github.com/Lyquix/php-git-deploy/pull/7)
+    * [Webhooks Plugin System](https://github.com/Lyquix/php-git-deploy/pull/8)
 
