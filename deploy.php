@@ -8,6 +8,14 @@
 // Measure execution time
 $time = -microtime(true);
 
+// Autoloader for plugin classes
+spl_autoload_register(function($className){
+	$namespace=str_replace("\\","/",__NAMESPACE__);
+	$className=str_replace("\\","/",$className);
+	$class=(!defined("PLUGINS_FOLDER") ? "plugins/" : PLUGINS_FOLDER).(empty($namespace)?"":$namespace."/")."{$className}.class.php";
+	include_once($class);
+});
+
 /* Functions */
 
 // Output buffering handler
@@ -29,36 +37,59 @@ function errorPage($msg) {
 }
 
 // Command to execute at the end of the script
-function endScript($msg = "") {
+function endScript($msg = "",$display = false) {
 	// Remove lock file
 	unlink(__DIR__ . '/deploy.lock');
+
 	// Flush buffer and prepare output for log and email
 	ob_end_flush();
 	global $output;
+
 	// Remove <head>, <script>, and <style> tags, including content
 	$output = preg_replace('/<head[\s\w\W\n]+<\/head>/m', '', $output);
 	$output = preg_replace('/<script[\s\w\W\n]+<\/script>/m', '', $output);
 	$output = preg_replace('/<style[\s\w\W\n]+<\/style>/m', '', $output);
+
 	// Add heading and strip tags
 	$output = str_repeat("~", 80) . "\n"
 			  . '[' . date('c') . '] - ' . $_SERVER['REMOTE_ADDR'] . " - b=" . $_GET['b'] . ' c=' . $_GET['c'] . "\n"
 			  . strip_tags($output);
+
 	// Decode HTML entities
 	$output = html_entity_decode($output);
+
 	// Collapse multiple blank lines into one
 	$output = preg_replace('/^\n+/m', "\n", $output);
+
 	// Save to log file
 	if(defined('LOG_FILE') && LOG_FILE !== '') error_log($output, 3, LOG_FILE);
+
 	// Send email notification
 	if(defined('EMAIL_NOTIFICATIONS') && EMAIL_NOTIFICATIONS !== '') error_log($output, 1, EMAIL_NOTIFICATIONS);
+
 	// Send error callback
-	if($msg && defined('CALLBACK_FILE') && file_exists(CALLBACK_FILE)){
-		require_once CALLBACK_FILE;
-		if(function_exists(callbackError)) {
-			callbackError($msg);
+	if(!empty($msg) && defined('CALLBACK_CLASSES') && !empty(CALLBACK_CLASSES)){
+		foreach (CALLBACK_CLASSES as $class) {
+			if(is_callable(array($class,"errorWebhook"))){
+				$callback = $class::errorWebhook($msg);
+				// prevent outputting after errorPage()
+				if($display === true){
+					if($callback === true){
+						echo "\n[Plugin: ".$class."] webhook successfully sent\n";
+					}else{
+						echo "ERR! Plugin '".$class."' returned: ".$callback;
+					}
+				}
+			}
 		}
 	}
-	die($msg);
+
+	// prevent outputting same error message from errorPage()
+	if($display === true){
+		die($msg);
+	}else{
+		die();
+	}
 }
 
 /* Begin Script Execution */
@@ -484,14 +515,23 @@ cmd(sprintf(
 ));
 
 // Send success callback
-if(defined('CALLBACK_FILE') && file_exists(CALLBACK_FILE)){
-	require_once CALLBACK_FILE;
-	if(function_exists(callbackSuccess)) {
-		callbackSuccess(array(
-			'branch' => $branch,
-			'commit' => $checkout,
-			'execTime' => $time + microtime(true)
-		));
+if(defined('CALLBACK_CLASSES') && !empty(CALLBACK_CLASSES)){
+	foreach (CALLBACK_CLASSES as $class) {
+		if(is_callable(array($class,"successWebhook"))){
+			$callback = $class::successWebhook(array(
+				'remote' => REMOTE_REPOSITORY,
+				'branch' => $branch,
+				'targetDirectory' => TARGET_DIR,
+				'commit' => $checkout,
+				'execTime' => $time + microtime(true)
+			));
+
+			if($callback === true){
+				echo "\n[Plugin: ".$class."] webhook successfully sent\n";
+			}else{
+				echo "ERR! Plugin '".$class."' returned: ".$callback;
+			}
+		}
 	}
 }
 ?>
@@ -501,4 +541,4 @@ Done in <?php echo $time + microtime(true); ?>sec
 </body>
 </html>
 <?php
-endScript();
+endScript("",true);

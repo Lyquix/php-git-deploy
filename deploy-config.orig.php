@@ -116,9 +116,19 @@ define('COMMANDS_AFTER_RSYNC', serialize(array()));
  */
 define('CLEANUP_WORK_TREE', false);
 
-/* CALLBACK_FILE:
- * Filename of a PHP script containing callback functions to
+/* CALLBACK_CLASSES:
+ * Classnames containing callback functions to
  * be triggered at the end of the script on success or failure.
  * Useful to connect to your preferred notification system.
+ * Note:
+ * 	- Classes must implement Plugin Interface
+ * 	- Class names have to match their file-name (case-sensitive), e.g. "Discord.class.php" has class "Discord"
+ * 	- The array keys contain only the class name, e.g. array("Discord") 
  */
-define('CALLBACK_FILE', '');
+define('CALLBACK_CLASSES', array(
+));
+
+/* PLUGINS_FOLDER:
+ * Folder containing all webhook plugins/classes, default: 'plugins/'
+ */
+define('PLUGINS_FOLDER','plugins/');
