@@ -205,9 +205,18 @@ $branch = '';
 if (!function_exists('getallheaders')) {
 	function getallheaders() {
 		$headers = [];
+		if (isset($_SERVER['CONTENT_TYPE']))
+			$headers['Content-Type'] = $_SERVER['CONTENT_TYPE'];
+		if (isset($_SERVER['CONTENT_LENGTH']))
+			$headers['Content-Length'] = $_SERVER['CONTENT_LENGTH'];
 		foreach ($_SERVER as $name => $value) {
 			if (substr($name, 0, 5) == 'HTTP_') {
-				$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+				$name = substr($name, 5);
+				$name = str_replace('_', ' ', $name);
+				$name = ucwords(strtolower($name));
+				$name = str_replace(' ', '-', $name);
+				$name = str_replace('X-Github', 'X-GitHub', $name);
+				$headers[$name] = $value;
 			}
 		}
 		return $headers;
