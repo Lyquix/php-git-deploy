@@ -4,8 +4,20 @@
  * PHP script for automatic code deployment directly from Github or Bitbucket to your server using webhooks
  * Documentation: https://github.com/Lyquix/php-git-deploy
  */
+ 
+/*
+ * For array options, you can use any of the following formats:
+ * define('OPTION', ['value1', 'value2', 'value3']); // works only in PHP 7.0+
+ * define('OPTION', 'value1, value2, value3');
+ * define('OPTION', serialize(array('value1', 'value2', 'value3'))); // for older PHP versions that disallow to use arrays as const value
+ * define('OPTION', ''); // for empty arrays
+ *
+ */
 
-/* DISABLED: Set to true to prevent the execution of this script. cript only when needed */
+/* DISABLED: Set to true to prevent the execution of this script.
+ * Useful to control activation of this script only when needed.
+ *
+ */
 define('DISABLED', false);
 
 /* IP_ALLOW:
@@ -17,8 +29,7 @@ define('DISABLED', false);
  * (https://confluence.atlassian.com/bitbucket/what-are-the-bitbucket-cloud-ip-addresses-i-should-use-to-configure-my-corporate-firewall-343343385.html)
  *
  */
-define('IP_ALLOW', serialize(array(
-)));
+define('IP_ALLOW', '');
 
 /*
  * REMOTE_REPOSITORY:
@@ -35,11 +46,7 @@ define('REMOTE_REPOSITORY', '');
  * Array of branch names allowed to deploy
  * First name in array is considered the default branch and only one allowed for automatic deployments
  */
-define('BRANCH', serialize(array(
-	'branch',
-	'mybranch',
-	'yourbranch'
-)));
+define('BRANCH', 'branch, mybranch, yourbranch');
 
 /*
  * ACCESS_TOKEN:
@@ -69,10 +76,10 @@ define('TIME_LIMIT', 60);
  * Array of files excluded from rsync (they will appear in GIT_DIR, but not in TARGET_DIR)
  * By default, only .git directory is excluded.
  * It's recommended to leave '.git' excluded and add something more if needed.
- * Example: define('EXCLUDE_FILES', serialize(array('.git', '.gitignore', '*.less', '*.scss')));
+ * Example: define('EXCLUDE_FILES', ['.git', '.gitignore', '*.less', '*.scss']);
  *
  */
-define('EXCLUDE_FILES', serialize(array('.git')));
+define('EXCLUDE_FILES', '.git');
 
 /* RSYNC_FLAGS:
  * Custom flags to run rsync with
@@ -96,17 +103,17 @@ define('RSYNC_FLAGS', '-rltgoDzvO');
  * Run commands before running rsync. Default: empty array
  * This commands will be run under GIT_DIR after checkout from remote repository
  * Useful for running build tasks
- * Example: define('COMMANDS_BEFORE_RSYNC', serialize(array('composer install')));
+ * Example: define('COMMANDS_BEFORE_RSYNC', ['composer install']);
  */
-define('COMMANDS_BEFORE_RSYNC', serialize(array()));
+define('COMMANDS_BEFORE_RSYNC', '');
 
 /* COMMANDS_AFTER_RSYNC:
  * Run commands after running rsync. Default: empty array
  * This commands will be run under TARGET_DIR after copying files from GIT_DIR
  * Useful for doing some cleanups
- * Example: define('COMMANDS_AFTER_RSYNC', serialize(array('rm cache/*.php -f')));
+ * Example: define('COMMANDS_AFTER_RSYNC', ['rm cache/*.php -f']);
  */
-define('COMMANDS_AFTER_RSYNC', serialize(array()));
+define('COMMANDS_AFTER_RSYNC', '');
 
 /* CLEANUP_WORK_TREE:
  * Clean GIT_DIR from leftovers after custom commands
@@ -125,8 +132,7 @@ define('CLEANUP_WORK_TREE', false);
  * 	- Class names have to match their file-name (case-sensitive), e.g. "Discord.class.php" has class "Discord"
  * 	- The array keys contain only the class name, e.g. array("Discord") 
  */
-define('CALLBACK_CLASSES', array(
-));
+define('CALLBACK_CLASSES', '');
 
 /* PLUGINS_FOLDER:
  * Folder containing all webhook plugins/classes, default: 'plugins/'

@@ -68,8 +68,8 @@ function endScript($msg = "",$display = false) {
 	if(defined('EMAIL_NOTIFICATIONS') && EMAIL_NOTIFICATIONS !== '') error_log($output, 1, EMAIL_NOTIFICATIONS);
 
 	// Send error callback
-	if(!empty($msg) && defined('CALLBACK_CLASSES') && !empty(CALLBACK_CLASSES)){
-		foreach (CALLBACK_CLASSES as $class) {
+	if(!empty($msg) && defined('CALLBACK_CLASSES') && !empty(getArray(CALLBACK_CLASSES))){
+		foreach (getArray(CALLBACK_CLASSES) as $class) {
 			if(is_callable(array($class,"errorWebhook"))){
 				$callback = $class::errorWebhook($msg);
 				// prevent outputting after errorPage()
@@ -90,6 +90,33 @@ function endScript($msg = "",$display = false) {
 	}else{
 		die();
 	}
+}
+
+// Return new array from string (possible formats: serialized, json, comma-separated or just single item) or array itself
+// To use with config entries
+function getArray($x = '') {
+	// For empty value (false, null, '', etc) - return empty array
+	if (empty($x)) {
+		return array();
+	}
+	// For array - return array itself
+	if (is_array($x)) {
+		return $x;
+	}
+	if (is_string($x)) {
+		// Serialized array (a:<len>:{<elements>})
+		if (preg_match('/^a:\d+:\{.*\}$/', $x)) {
+			return unserialize($x);
+		}
+		// Json array ([<elements>])
+		if (preg_match('/^\[.*\]$/', $x)) {
+			return json_decode($x, true);				
+		}
+		// Comma-separated list or single element
+		return array_map('trim', explode(',', $x));
+	}
+	// For anything else - push it into single-element array
+	return array($x);
 }
 
 /* Begin Script Execution */
@@ -120,7 +147,7 @@ if (!defined('BRANCH') || BRANCH === '') $err[] = 'Branch is not configured';
 if (!defined('GIT_DIR') || GIT_DIR === '') $err[] = 'Git directory is not configured';
 if (!defined('TARGET_DIR') || TARGET_DIR === '') $err[] = 'Target directory is not configured';
 if (!defined('TIME_LIMIT')) define('TIME_LIMIT', 60);
-if (!defined('EXCLUDE_FILES')) define('EXCLUDE_FILES', serialize(array('.git')));
+if (!defined('EXCLUDE_FILES')) define('EXCLUDE_FILES', '.git');
 if (!defined('RSYNC_FLAGS')) define('RSYNC_FLAGS', '-rltgoDzvO');
 
 // If there is a configuration error
@@ -141,9 +168,9 @@ $fh = fopen(__DIR__ . '/deploy.lock', 'w');
 fclose($fh);
 
 // Check if IP is allowed
-if(defined('IP_ALLOW') && count(unserialize(IP_ALLOW))) {
+if(defined('IP_ALLOW') && count(getArray(IP_ALLOW))) {
 	$allow = false;
-	foreach(unserialize(IP_ALLOW) as $ip_allow) {
+	foreach(getArray(IP_ALLOW) as $ip_allow) {
 		if(strpos($ip_allow, '/') === false) {
 			// Single IP
 			if(inet_pton($_SERVER['REMOTE_ADDR']) == inet_pton($ip_allow)) {
@@ -265,7 +292,7 @@ if(isset($headers['X-Event-Key'])) {
 // Branch from webhook?
 if($branch) {
 	// Only main branch is allowed for webhook deployments
-	if($branch != unserialize(BRANCH)[0]) {
+	if($branch != getArray(BRANCH)[0]) {
 		$msg = 'Branch ' . $branch . ' not allowed, stopping execution.';
 		echo "\n" . $msg . "\n</pre></body></html>";
 		endScript($msg);
@@ -276,13 +303,13 @@ if($branch) {
 	if(isset($_GET['b'])) {
 		$branch = $_GET['b'];
 		// Check if branch is allowed
-		if(!in_array($branch, unserialize(BRANCH))) {
+		if(!in_array($branch, getArray(BRANCH))) {
 			$msg = 'Branch ' . $branch . ' not allowed, stopping execution.';
 			echo "\n" . $msg . "\n</pre></body></html>";
 			endScript($msg);
 			}
 	} else {
-		$branch = unserialize(BRANCH)[0];
+		$branch = getArray(BRANCH)[0];
 		echo "No branch specified, assuming default branch $branch\n";
 	}
 }
@@ -473,15 +500,15 @@ printf(
 echo "\nNOTE: repository files that have been modfied or removed in target directory will be resynced with repository even if not listed in commits\n";
 
 // Run before rsync commands
-if(defined('COMMANDS_BEFORE_RSYNC') && count(unserialize(COMMANDS_BEFORE_RSYNC))) {
+if(defined('COMMANDS_BEFORE_RSYNC') && count(getArray(COMMANDS_BEFORE_RSYNC))) {
 	echo "\nRunning before rsync commands\n";
-	foreach(unserialize(COMMANDS_BEFORE_RSYNC) as $command) {
+	foreach(getArray(COMMANDS_BEFORE_RSYNC) as $command) {
 		cmd($command);
 	}
 }
 
 // Build exclusion list
-$exclude = unserialize(EXCLUDE_FILES);
+$exclude = getArray(EXCLUDE_FILES);
 array_unshift($exclude, '');
 
 // rsync all added and modified files (by default: no deletes, exclude .git directory)
@@ -498,9 +525,9 @@ echo "\nDeleting files removed from repository\n";
 foreach($deleted as $file) unlink($file);
 
 // Run after rsync commands
-if(defined('COMMANDS_AFTER_RSYNC') && count(unserialize(COMMANDS_AFTER_RSYNC))) {
+if(defined('COMMANDS_AFTER_RSYNC') && count(getArray(COMMANDS_AFTER_RSYNC))) {
 	echo "\nRunning after rsync commands\n";
-	foreach(unserialize(COMMANDS_AFTER_RSYNC) as $command) {
+	foreach(getArray(COMMANDS_AFTER_RSYNC) as $command) {
 		cmd($command, true, TARGET_DIR);
 	}
 }
@@ -524,8 +551,8 @@ cmd(sprintf(
 ));
 
 // Send success callback
-if(defined('CALLBACK_CLASSES') && !empty(CALLBACK_CLASSES)){
-	foreach (CALLBACK_CLASSES as $class) {
+if(defined('CALLBACK_CLASSES') && !empty(getArray(CALLBACK_CLASSES))){
+	foreach (getArray(CALLBACK_CLASSES) as $class) {
 		if(is_callable(array($class,"successWebhook"))){
 			$callback = $class::successWebhook(array(
 				'remote' => REMOTE_REPOSITORY,
