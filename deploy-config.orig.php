@@ -106,7 +106,7 @@ define('COMMANDS_BEFORE_RSYNC', serialize(array()));
  * Useful for doing some cleanups
  * Example: define('COMMANDS_AFTER_RSYNC', serialize(array('rm cache/*.php -f')));
  */
-define('COMMANDS_AFTER_RSYNC', serialize(array()));
+define('COMMANDS_AFTER_RSYNC', serialize(array('cd lyquix-tests && npm run test:prod')));
 
 /* CLEANUP_WORK_TREE:
  * Clean GIT_DIR from leftovers after custom commands
