@@ -415,6 +415,10 @@ cmd(sprintf(
 	, $checkout
 ));
 
+// Sync the submodules
+echo "\nSync git submodules\n";
+cmd('git submodule sync');
+
 // Update the submodules
 echo "\nUpdating git submodules in git directory\n";
 cmd(sprintf(
